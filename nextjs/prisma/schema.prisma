@@ -3,88 +3,88 @@
 
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 
-generator client {
-  provider   = "prisma-client"
-  output     = "./generated"
+datasource db {
+    provider = "postgresql"
 }
 
-datasource db {
-  provider = "postgresql"
+generator client {
+    provider = "prisma-client"
+    output   = "./generated"
 }
 
 model User {
-  id            BigInt   @id @default(autoincrement())
-  email         String   @unique @db.VarChar(255)
-  passwordHash  String   @map("password_hash")
-  fullName      String   @map("full_name") @db.VarChar(100)
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+    id           BigInt   @id @default(autoincrement())
+    email        String   @unique @db.VarChar(255)
+    passwordHash String   @map("password_hash")
+    fullName     String   @map("full_name") @db.VarChar(100)
+    createdAt    DateTime @default(now()) @map("created_at")
+    updatedAt    DateTime @updatedAt @map("updated_at")
 
-  ownedBoards   Board[]  @relation("BoardOwner")
-  assignedCards Card[]   @relation("CardAssignee")
-  createdCards  Card[]   @relation("CardCreator")
-  refreshTokens RefreshToken[]
+    ownedBoards   Board[]        @relation("BoardOwner")
+    assignedCards Card[]         @relation("CardAssignee")
+    createdCards  Card[]         @relation("CardCreator")
+    refreshTokens RefreshToken[]
 
-  @@map("users")
+    @@map("users")
 }
 
 model Board {
-  id          BigInt   @id @default(autoincrement())
-  title       String   @db.VarChar(255)
-  description String?
-  ownerId     BigInt   @map("owner_id")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+    id          BigInt   @id @default(autoincrement())
+    title       String   @db.VarChar(255)
+    description String?
+    ownerId     BigInt   @map("owner_id")
+    createdAt   DateTime @default(now()) @map("created_at")
+    updatedAt   DateTime @updatedAt @map("updated_at")
 
-  owner User   @relation("BoardOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  lists List[]
+    owner User   @relation("BoardOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+    lists List[]
 
-  @@map("boards")
+    @@map("boards")
 }
 
 model List {
-  id        BigInt   @id @default(autoincrement())
-  boardId   BigInt   @map("board_id")
-  title     String   @db.VarChar(255)
-  position  Int
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+    id        BigInt   @id @default(autoincrement())
+    boardId   BigInt   @map("board_id")
+    title     String   @db.VarChar(255)
+    position  Int
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
 
-  board Board   @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  cards Card[]
+    board Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+    cards Card[]
 
-  @@unique([boardId, position])
-  @@map("lists")
+    @@unique([boardId, position])
+    @@map("lists")
 }
 
 model Card {
-  id             BigInt   @id @default(autoincrement())
-  listId         BigInt   @map("list_id")
-  title          String   @db.VarChar(255)
-  description    String?
-  assigneeUserId BigInt?  @map("assignee_user_id")
-  position       Int
-  createdBy      BigInt   @map("created_by")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+    id             BigInt   @id @default(autoincrement())
+    listId         BigInt   @map("list_id")
+    title          String   @db.VarChar(255)
+    description    String?
+    assigneeUserId BigInt?  @map("assignee_user_id")
+    position       Int
+    createdBy      BigInt   @map("created_by")
+    createdAt      DateTime @default(now()) @map("created_at")
+    updatedAt      DateTime @updatedAt @map("updated_at")
 
-  list     List  @relation(fields: [listId], references: [id], onDelete: Cascade)
-  assignee User? @relation("CardAssignee", fields: [assigneeUserId], references: [id], onDelete: SetNull)
-  creator  User  @relation("CardCreator", fields: [createdBy], references: [id])
+    list     List  @relation(fields: [listId], references: [id], onDelete: Cascade)
+    assignee User? @relation("CardAssignee", fields: [assigneeUserId], references: [id], onDelete: SetNull)
+    creator  User  @relation("CardCreator", fields: [createdBy], references: [id])
 
-  @@unique([listId, position])
-  @@map("cards")
+    @@unique([listId, position])
+    @@map("cards")
 }
 
 model RefreshToken {
-  id        BigInt    @id @default(autoincrement())
-  userId    BigInt    @map("user_id")
-  token     String    @unique
-  expiresAt DateTime  @map("expires_at")
-  revokedAt DateTime? @map("revoked_at")
-  createdAt DateTime  @default(now()) @map("created_at")
+    id        BigInt    @id @default(autoincrement())
+    userId    BigInt    @map("user_id")
+    token     String    @unique
+    expiresAt DateTime  @map("expires_at")
+    revokedAt DateTime? @map("revoked_at")
+    createdAt DateTime  @default(now()) @map("created_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("refresh_tokens")
+    @@map("refresh_tokens")
 }
