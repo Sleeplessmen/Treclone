@@ -22,9 +22,7 @@ export default function MarketingLayout({
       </header>
 
       {/* Main Content */}
-      <main className="flex-1">
-        {children}
-      </main>
+      <main className="flex-1">{children}</main>
 
       {/* Footer */}
       <footer className="bg-surface-1 p-gap-xl mt-gap-xl border-t border-surface-1">
