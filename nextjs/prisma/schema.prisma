@@ -12,6 +12,20 @@ generator client {
     output   = "./generated/client"
 }
 
+model Workspace {
+  id        BigInt   @id @default(autoincrement())
+  name      String   @db.VarChar(255)
+  ownerId   BigInt   @map("owner_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  owner  User    @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  boards Board[]
+
+  @@index([ownerId])
+  @@map("workspaces")
+}
+
 model User {
     id                   BigInt    @id @default(autoincrement())
     email                String    @unique @db.VarChar(255)
@@ -22,6 +36,7 @@ model User {
     passwordResetToken   String?   @unique @map("password_reset_token")
     passwordResetExpires DateTime? @map("password_reset_expires")
 
+  ownedWorkspaces Workspace[] @relation("WorkspaceOwner")
     ownedBoards   Board[]        @relation("BoardOwner")
     assignedCards Card[]         @relation("CardAssignee")
     createdCards  Card[]         @relation("CardCreator")
@@ -29,6 +44,8 @@ model User {
 
     @@map("users")
 }
+
+
 
 model Board {
     id          BigInt   @id @default(autoincrement())
@@ -40,8 +57,11 @@ model Board {
 
     owner User   @relation("BoardOwner", fields: [ownerId], references: [id], onDelete: Cascade)
     lists List[]
-
-    @@index([ownerId])
+    
+    workspaceId BigInt  @map("workspace_id")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+    
+  @@index([workspaceId])
     @@map("boards")
 }
 
