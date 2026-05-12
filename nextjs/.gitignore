@@ -42,6 +42,7 @@ yarn-error.log*
 
 # generated file
 app/generated
+prisma/generated/
 
 # storybook
 *storybook.log
