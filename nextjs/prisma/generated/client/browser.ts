@@ -42,3 +42,28 @@ export type Card = Prisma.CardModel
  * 
  */
 export type RefreshToken = Prisma.RefreshTokenModel
+/**
+ * Model Workspace
+ * 
+ */
+export type Workspace = Prisma.WorkspaceModel
+/**
+ * Model WorkspaceMember
+ * 
+ */
+export type WorkspaceMember = Prisma.WorkspaceMemberModel
+/**
+ * Model BoardMember
+ * 
+ */
+export type BoardMember = Prisma.BoardMemberModel
+/**
+ * Model BoardTemplate
+ * 
+ */
+export type BoardTemplate = Prisma.BoardTemplateModel
+/**
+ * Model TemplateList
+ * 
+ */
+export type TemplateList = Prisma.TemplateListModel

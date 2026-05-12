@@ -55,7 +55,12 @@ export const ModelName = {
   Board: 'Board',
   List: 'List',
   Card: 'Card',
-  RefreshToken: 'RefreshToken'
+  RefreshToken: 'RefreshToken',
+  Workspace: 'Workspace',
+  WorkspaceMember: 'WorkspaceMember',
+  BoardMember: 'BoardMember',
+  BoardTemplate: 'BoardTemplate',
+  TemplateList: 'TemplateList'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -80,9 +85,7 @@ export const UserScalarFieldEnum = {
   passwordHash: 'passwordHash',
   fullName: 'fullName',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  passwordResetToken: 'passwordResetToken',
-  passwordResetExpires: 'passwordResetExpires'
+  updatedAt: 'updatedAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -137,6 +140,64 @@ export const RefreshTokenScalarFieldEnum = {
 } as const
 
 export type RefreshTokenScalarFieldEnum = (typeof RefreshTokenScalarFieldEnum)[keyof typeof RefreshTokenScalarFieldEnum]
+
+
+export const WorkspaceScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WorkspaceScalarFieldEnum = (typeof WorkspaceScalarFieldEnum)[keyof typeof WorkspaceScalarFieldEnum]
+
+
+export const WorkspaceMemberScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  workspaceId: 'workspaceId',
+  role: 'role',
+  joinedAt: 'joinedAt'
+} as const
+
+export type WorkspaceMemberScalarFieldEnum = (typeof WorkspaceMemberScalarFieldEnum)[keyof typeof WorkspaceMemberScalarFieldEnum]
+
+
+export const BoardMemberScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  boardId: 'boardId',
+  role: 'role',
+  joinedAt: 'joinedAt'
+} as const
+
+export type BoardMemberScalarFieldEnum = (typeof BoardMemberScalarFieldEnum)[keyof typeof BoardMemberScalarFieldEnum]
+
+
+export const BoardTemplateScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  thumbnail: 'thumbnail',
+  category: 'category',
+  isPublic: 'isPublic',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BoardTemplateScalarFieldEnum = (typeof BoardTemplateScalarFieldEnum)[keyof typeof BoardTemplateScalarFieldEnum]
+
+
+export const TemplateListScalarFieldEnum = {
+  id: 'id',
+  templateId: 'templateId',
+  title: 'title',
+  position: 'position',
+  createdAt: 'createdAt'
+} as const
+
+export type TemplateListScalarFieldEnum = (typeof TemplateListScalarFieldEnum)[keyof typeof TemplateListScalarFieldEnum]
 
 
 export const SortOrder = {

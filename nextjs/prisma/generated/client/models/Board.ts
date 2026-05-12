@@ -230,6 +230,7 @@ export type BoardWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Board"> | Date | string
   owner?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   lists?: Prisma.ListListRelationFilter
+  boardMembers?: Prisma.BoardMemberListRelationFilter
 }
 
 export type BoardOrderByWithRelationInput = {
@@ -241,6 +242,7 @@ export type BoardOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   owner?: Prisma.UserOrderByWithRelationInput
   lists?: Prisma.ListOrderByRelationAggregateInput
+  boardMembers?: Prisma.BoardMemberOrderByRelationAggregateInput
 }
 
 export type BoardWhereUniqueInput = Prisma.AtLeast<{
@@ -255,6 +257,7 @@ export type BoardWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Board"> | Date | string
   owner?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   lists?: Prisma.ListListRelationFilter
+  boardMembers?: Prisma.BoardMemberListRelationFilter
 }, "id">
 
 export type BoardOrderByWithAggregationInput = {
@@ -291,6 +294,7 @@ export type BoardCreateInput = {
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutOwnedBoardsInput
   lists?: Prisma.ListCreateNestedManyWithoutBoardInput
+  boardMembers?: Prisma.BoardMemberCreateNestedManyWithoutBoardInput
 }
 
 export type BoardUncheckedCreateInput = {
@@ -301,6 +305,7 @@ export type BoardUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   lists?: Prisma.ListUncheckedCreateNestedManyWithoutBoardInput
+  boardMembers?: Prisma.BoardMemberUncheckedCreateNestedManyWithoutBoardInput
 }
 
 export type BoardUpdateInput = {
@@ -311,6 +316,7 @@ export type BoardUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutOwnedBoardsNestedInput
   lists?: Prisma.ListUpdateManyWithoutBoardNestedInput
+  boardMembers?: Prisma.BoardMemberUpdateManyWithoutBoardNestedInput
 }
 
 export type BoardUncheckedUpdateInput = {
@@ -321,6 +327,7 @@ export type BoardUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lists?: Prisma.ListUncheckedUpdateManyWithoutBoardNestedInput
+  boardMembers?: Prisma.BoardMemberUncheckedUpdateManyWithoutBoardNestedInput
 }
 
 export type BoardCreateManyInput = {
@@ -443,6 +450,10 @@ export type BoardUncheckedUpdateManyWithoutOwnerNestedInput = {
   deleteMany?: Prisma.BoardScalarWhereInput | Prisma.BoardScalarWhereInput[]
 }
 
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
+}
+
 export type BoardCreateNestedOneWithoutListsInput = {
   create?: Prisma.XOR<Prisma.BoardCreateWithoutListsInput, Prisma.BoardUncheckedCreateWithoutListsInput>
   connectOrCreate?: Prisma.BoardCreateOrConnectWithoutListsInput
@@ -457,6 +468,20 @@ export type BoardUpdateOneRequiredWithoutListsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.BoardUpdateToOneWithWhereWithoutListsInput, Prisma.BoardUpdateWithoutListsInput>, Prisma.BoardUncheckedUpdateWithoutListsInput>
 }
 
+export type BoardCreateNestedOneWithoutBoardMembersInput = {
+  create?: Prisma.XOR<Prisma.BoardCreateWithoutBoardMembersInput, Prisma.BoardUncheckedCreateWithoutBoardMembersInput>
+  connectOrCreate?: Prisma.BoardCreateOrConnectWithoutBoardMembersInput
+  connect?: Prisma.BoardWhereUniqueInput
+}
+
+export type BoardUpdateOneRequiredWithoutBoardMembersNestedInput = {
+  create?: Prisma.XOR<Prisma.BoardCreateWithoutBoardMembersInput, Prisma.BoardUncheckedCreateWithoutBoardMembersInput>
+  connectOrCreate?: Prisma.BoardCreateOrConnectWithoutBoardMembersInput
+  upsert?: Prisma.BoardUpsertWithoutBoardMembersInput
+  connect?: Prisma.BoardWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.BoardUpdateToOneWithWhereWithoutBoardMembersInput, Prisma.BoardUpdateWithoutBoardMembersInput>, Prisma.BoardUncheckedUpdateWithoutBoardMembersInput>
+}
+
 export type BoardCreateWithoutOwnerInput = {
   id?: bigint | number
   title: string
@@ -464,6 +489,7 @@ export type BoardCreateWithoutOwnerInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   lists?: Prisma.ListCreateNestedManyWithoutBoardInput
+  boardMembers?: Prisma.BoardMemberCreateNestedManyWithoutBoardInput
 }
 
 export type BoardUncheckedCreateWithoutOwnerInput = {
@@ -473,6 +499,7 @@ export type BoardUncheckedCreateWithoutOwnerInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   lists?: Prisma.ListUncheckedCreateNestedManyWithoutBoardInput
+  boardMembers?: Prisma.BoardMemberUncheckedCreateNestedManyWithoutBoardInput
 }
 
 export type BoardCreateOrConnectWithoutOwnerInput = {
@@ -520,6 +547,7 @@ export type BoardCreateWithoutListsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutOwnedBoardsInput
+  boardMembers?: Prisma.BoardMemberCreateNestedManyWithoutBoardInput
 }
 
 export type BoardUncheckedCreateWithoutListsInput = {
@@ -529,6 +557,7 @@ export type BoardUncheckedCreateWithoutListsInput = {
   ownerId: bigint | number
   createdAt?: Date | string
   updatedAt?: Date | string
+  boardMembers?: Prisma.BoardMemberUncheckedCreateNestedManyWithoutBoardInput
 }
 
 export type BoardCreateOrConnectWithoutListsInput = {
@@ -554,6 +583,7 @@ export type BoardUpdateWithoutListsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutOwnedBoardsNestedInput
+  boardMembers?: Prisma.BoardMemberUpdateManyWithoutBoardNestedInput
 }
 
 export type BoardUncheckedUpdateWithoutListsInput = {
@@ -563,6 +593,63 @@ export type BoardUncheckedUpdateWithoutListsInput = {
   ownerId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  boardMembers?: Prisma.BoardMemberUncheckedUpdateManyWithoutBoardNestedInput
+}
+
+export type BoardCreateWithoutBoardMembersInput = {
+  id?: bigint | number
+  title: string
+  description?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  owner: Prisma.UserCreateNestedOneWithoutOwnedBoardsInput
+  lists?: Prisma.ListCreateNestedManyWithoutBoardInput
+}
+
+export type BoardUncheckedCreateWithoutBoardMembersInput = {
+  id?: bigint | number
+  title: string
+  description?: string | null
+  ownerId: bigint | number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  lists?: Prisma.ListUncheckedCreateNestedManyWithoutBoardInput
+}
+
+export type BoardCreateOrConnectWithoutBoardMembersInput = {
+  where: Prisma.BoardWhereUniqueInput
+  create: Prisma.XOR<Prisma.BoardCreateWithoutBoardMembersInput, Prisma.BoardUncheckedCreateWithoutBoardMembersInput>
+}
+
+export type BoardUpsertWithoutBoardMembersInput = {
+  update: Prisma.XOR<Prisma.BoardUpdateWithoutBoardMembersInput, Prisma.BoardUncheckedUpdateWithoutBoardMembersInput>
+  create: Prisma.XOR<Prisma.BoardCreateWithoutBoardMembersInput, Prisma.BoardUncheckedCreateWithoutBoardMembersInput>
+  where?: Prisma.BoardWhereInput
+}
+
+export type BoardUpdateToOneWithWhereWithoutBoardMembersInput = {
+  where?: Prisma.BoardWhereInput
+  data: Prisma.XOR<Prisma.BoardUpdateWithoutBoardMembersInput, Prisma.BoardUncheckedUpdateWithoutBoardMembersInput>
+}
+
+export type BoardUpdateWithoutBoardMembersInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  owner?: Prisma.UserUpdateOneRequiredWithoutOwnedBoardsNestedInput
+  lists?: Prisma.ListUpdateManyWithoutBoardNestedInput
+}
+
+export type BoardUncheckedUpdateWithoutBoardMembersInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lists?: Prisma.ListUncheckedUpdateManyWithoutBoardNestedInput
 }
 
 export type BoardCreateManyOwnerInput = {
@@ -580,6 +667,7 @@ export type BoardUpdateWithoutOwnerInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lists?: Prisma.ListUpdateManyWithoutBoardNestedInput
+  boardMembers?: Prisma.BoardMemberUpdateManyWithoutBoardNestedInput
 }
 
 export type BoardUncheckedUpdateWithoutOwnerInput = {
@@ -589,6 +677,7 @@ export type BoardUncheckedUpdateWithoutOwnerInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   lists?: Prisma.ListUncheckedUpdateManyWithoutBoardNestedInput
+  boardMembers?: Prisma.BoardMemberUncheckedUpdateManyWithoutBoardNestedInput
 }
 
 export type BoardUncheckedUpdateManyWithoutOwnerInput = {
@@ -606,10 +695,12 @@ export type BoardUncheckedUpdateManyWithoutOwnerInput = {
 
 export type BoardCountOutputType = {
   lists: number
+  boardMembers: number
 }
 
 export type BoardCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   lists?: boolean | BoardCountOutputTypeCountListsArgs
+  boardMembers?: boolean | BoardCountOutputTypeCountBoardMembersArgs
 }
 
 /**
@@ -629,6 +720,13 @@ export type BoardCountOutputTypeCountListsArgs<ExtArgs extends runtime.Types.Ext
   where?: Prisma.ListWhereInput
 }
 
+/**
+ * BoardCountOutputType without action
+ */
+export type BoardCountOutputTypeCountBoardMembersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.BoardMemberWhereInput
+}
+
 
 export type BoardSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -639,6 +737,7 @@ export type BoardSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   updatedAt?: boolean
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   lists?: boolean | Prisma.Board$listsArgs<ExtArgs>
+  boardMembers?: boolean | Prisma.Board$boardMembersArgs<ExtArgs>
   _count?: boolean | Prisma.BoardCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["board"]>
 
@@ -675,6 +774,7 @@ export type BoardOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
 export type BoardInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   lists?: boolean | Prisma.Board$listsArgs<ExtArgs>
+  boardMembers?: boolean | Prisma.Board$boardMembersArgs<ExtArgs>
   _count?: boolean | Prisma.BoardCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type BoardIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -689,6 +789,7 @@ export type $BoardPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   objects: {
     owner: Prisma.$UserPayload<ExtArgs>
     lists: Prisma.$ListPayload<ExtArgs>[]
+    boardMembers: Prisma.$BoardMemberPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: bigint
@@ -1093,6 +1194,7 @@ export interface Prisma__BoardClient<T, Null = never, ExtArgs extends runtime.Ty
   readonly [Symbol.toStringTag]: "PrismaPromise"
   owner<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   lists<T extends Prisma.Board$listsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Board$listsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ListPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  boardMembers<T extends Prisma.Board$boardMembersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Board$boardMembersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BoardMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1550,6 +1652,30 @@ export type Board$listsArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
   take?: number
   skip?: number
   distinct?: Prisma.ListScalarFieldEnum | Prisma.ListScalarFieldEnum[]
+}
+
+/**
+ * Board.boardMembers
+ */
+export type Board$boardMembersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BoardMember
+   */
+  select?: Prisma.BoardMemberSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the BoardMember
+   */
+  omit?: Prisma.BoardMemberOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BoardMemberInclude<ExtArgs> | null
+  where?: Prisma.BoardMemberWhereInput
+  orderBy?: Prisma.BoardMemberOrderByWithRelationInput | Prisma.BoardMemberOrderByWithRelationInput[]
+  cursor?: Prisma.BoardMemberWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BoardMemberScalarFieldEnum | Prisma.BoardMemberScalarFieldEnum[]
 }
 
 /**

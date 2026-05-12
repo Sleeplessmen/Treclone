@@ -1,11 +1,14 @@
 import { NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
 import { createBoardSchema } from '@/lib/validation'
-import { successResponse, errorResponse } from '@/lib/api-utils'
+import { successResponse, errorResponse, convertBigIntToString } from '@/lib/api-utils'
 import { getAuthToken, extractUserIdFromToken } from '@/lib/auth-utils'
 
-// GET all boards for the current user
-export async function GET(request: NextRequest) {
+// GET all boards for a specific workspace
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { workspaceId: string } }
+) {
   try {
     const token = getAuthToken(request)
 
@@ -19,14 +22,30 @@ export async function GET(request: NextRequest) {
       return errorResponse('Unauthorized - invalid token', 401)
     }
 
-    // Fetch all boards owned by the user
+    const workspaceId = BigInt(params.workspaceId)
+
+    // Verify workspace exists and user owns it
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+    })
+
+    if (!workspace) {
+      return errorResponse('Workspace not found', 404)
+    }
+
+    if (workspace.ownerId !== userId) {
+      return errorResponse('Forbidden - not the workspace owner', 403)
+    }
+
+    // Fetch boards in this workspace
     const boards = await prisma.board.findMany({
-      where: { ownerId: userId },
+      where: { workspaceId },
       select: {
         id: true,
         title: true,
         description: true,
         ownerId: true,
+        workspaceId: true,
         createdAt: true,
         updatedAt: true,
         lists: {
@@ -45,7 +64,7 @@ export async function GET(request: NextRequest) {
 
     return successResponse({
       message: 'Boards fetched successfully',
-      boards,
+      boards: convertBigIntToString(boards),
     })
   } catch (error) {
     const errorMessage =
@@ -54,8 +73,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST create a new board
-export async function POST(request: NextRequest) {
+// POST create a new board in a workspace
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { workspaceId: string } }
+) {
   try {
     const token = getAuthToken(request)
 
@@ -69,9 +91,22 @@ export async function POST(request: NextRequest) {
       return errorResponse('Unauthorized - invalid token', 401)
     }
 
-    const body = await request.json()
+    const workspaceId = BigInt(params.workspaceId)
 
-    // Validate input
+    // Verify workspace exists and user owns it
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+    })
+
+    if (!workspace) {
+      return errorResponse('Workspace not found', 404)
+    }
+
+    if (workspace.ownerId !== userId) {
+      return errorResponse('Forbidden - not the workspace owner', 403)
+    }
+
+    const body = await request.json()
     const validatedData = createBoardSchema.parse(body)
 
     // Create new board
@@ -80,12 +115,14 @@ export async function POST(request: NextRequest) {
         title: validatedData.title,
         description: validatedData.description || null,
         ownerId: userId,
+        workspaceId,
       },
       select: {
         id: true,
         title: true,
         description: true,
         ownerId: true,
+        workspaceId: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -94,7 +131,7 @@ export async function POST(request: NextRequest) {
     return successResponse(
       {
         message: 'Board created successfully',
-        board,
+        board: convertBigIntToString(board),
       },
       201
     )
