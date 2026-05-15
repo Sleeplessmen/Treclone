@@ -4,13 +4,11 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  registerFormSchema,
-  type RegisterFormValues,
-} from '../_schemas/register-form.schema';
+import { registerSchema, type RegisterInput } from '@/lib/validation/auth';
 
 export function UserRegisterForm() {
   const router = useRouter();
@@ -21,11 +19,11 @@ export function UserRegisterForm() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerFormSchema),
+  } = useForm<RegisterInput>({
+    resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = async (data: RegisterFormValues) => {
+  const onSubmit = async (data: RegisterInput) => {
     setIsLoading(true);
     setApiError(null);
 
@@ -104,7 +102,7 @@ export function UserRegisterForm() {
 
       {/* API Error Container */}
       {apiError && (
-        <div className="p-gap-md bg-error-container/20 border border-destructive/30 rounded-sm">
+        <div className="p-gap-md bg-error-container/10 border border-destructive rounded-sm">
           <p className="text-destructive text-sm font-medium">{apiError}</p>
         </div>
       )}
