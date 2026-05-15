@@ -47,6 +47,11 @@ export { Prisma }
  */
 export type User = Prisma.UserModel
 /**
+ * Model Workspace
+ * 
+ */
+export type Workspace = Prisma.WorkspaceModel
+/**
  * Model Board
  * 
  */
@@ -66,11 +71,6 @@ export type Card = Prisma.CardModel
  * 
  */
 export type RefreshToken = Prisma.RefreshTokenModel
-/**
- * Model Workspace
- * 
- */
-export type Workspace = Prisma.WorkspaceModel
 /**
  * Model WorkspaceMember
  * 

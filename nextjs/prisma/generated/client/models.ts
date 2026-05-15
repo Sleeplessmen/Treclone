@@ -9,11 +9,11 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/User'
+export type * from './models/Workspace'
 export type * from './models/Board'
 export type * from './models/List'
 export type * from './models/Card'
 export type * from './models/RefreshToken'
-export type * from './models/Workspace'
 export type * from './models/WorkspaceMember'
 export type * from './models/BoardMember'
 export type * from './models/BoardTemplate'

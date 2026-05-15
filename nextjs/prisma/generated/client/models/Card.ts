@@ -609,14 +609,6 @@ export type CardUncheckedUpdateManyWithoutListNestedInput = {
   deleteMany?: Prisma.CardScalarWhereInput | Prisma.CardScalarWhereInput[]
 }
 
-export type NullableBigIntFieldUpdateOperationsInput = {
-  set?: bigint | number | null
-  increment?: bigint | number
-  decrement?: bigint | number
-  multiply?: bigint | number
-  divide?: bigint | number
-}
-
 export type CardCreateWithoutAssigneeInput = {
   id?: bigint | number
   title: string
