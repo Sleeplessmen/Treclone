@@ -43,6 +43,13 @@ yarn-error.log*
 !.vscode/settings.json
 *.pem
 
+# testing
+/coverage
+.vitest/
+.nyc_output/
+*.lcov
+vitest.results.json
+
 # Vercel
 .vercel
 
