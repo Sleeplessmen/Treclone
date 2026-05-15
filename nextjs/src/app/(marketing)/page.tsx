@@ -83,7 +83,7 @@ export default async function MarketingHomePage() {
           <p className="text-body text-ink-muted">
             Tạo tài khoản miễn phí ngay hôm nay và bắt đầu quản lý dự án của bạn
           </p>
-          <Link href="/register">
+          <Link href="/register" className="block">
             <Button variant="default" size="lg">
               Tạo tài khoản miễn phí
             </Button>
