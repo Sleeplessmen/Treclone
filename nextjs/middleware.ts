@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import * as jwt from 'jsonwebtoken'
+import { JWT_SECRET } from '@/lib/auth-utils'
 
 const protectedRoutes = ['/workspaces', '/(dashboard)']
 const publicRoutes = ['/auth/login', '/auth/register', '/auth/forgot-password', '/auth/reset-password', '/']
@@ -24,8 +25,17 @@ export function middleware(request: NextRequest) {
         }
 
         try {
-            jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key')
+            jwt.verify(token, JWT_SECRET)
         } catch (error) {
+            // Log verification failure for security monitoring
+            if (error instanceof jwt.JsonWebTokenError) {
+                console.warn('[Middleware] Token verification failed:', error.message, {
+                    path: pathname,
+                    timestamp: new Date().toISOString(),
+                })
+            } else {
+                console.error('[Middleware] Unexpected error during token verification:', error)
+            }
             return NextResponse.redirect(new URL('/auth/login', request.url))
         }
     }
@@ -33,10 +43,14 @@ export function middleware(request: NextRequest) {
     // If logged in and trying to access auth pages, redirect to workspaces
     if (isPublicRoute && pathname.startsWith('/auth') && token) {
         try {
-            jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key')
+            jwt.verify(token, JWT_SECRET)
             return NextResponse.redirect(new URL('/workspaces', request.url))
         } catch (error) {
             // Token invalid, allow access to auth pages
+            if (error instanceof jwt.JsonWebTokenError) {
+                console.debug('[Middleware] Invalid token on auth page, allowing access:', error.message)
+            }
+            // Don't rethrow - this is expected behavior
         }
     }
 

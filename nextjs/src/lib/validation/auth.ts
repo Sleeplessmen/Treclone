@@ -15,35 +15,30 @@ export const forgotPasswordSchema = z.object({
     email: z.email('Invalid email address'),
 })
 
-export const resetPasswordSchema = z
-    .object({
-        token: z.string().min(1, 'Token is required'),
-        password: z
-            .string()
-            .min(8, 'Password must be at least 8 characters long'),
-        passwordConfirmation: z.string(),
-    })
-    .refine(data => data.password === data.passwordConfirmation, {
+export const resetPasswordSchema = z.object({
+    token: z.string().min(1, 'Token is required'),
+    password: z
+        .string()
+        .min(8, 'Password must be at least 8 characters long'),
+    passwordConfirmation: z.string(),
+}).refine(data => data.password === data.passwordConfirmation, {
+    message: "Passwords don't match",
+    path: ['passwordConfirmation'],
+})
+
+export const updateProfileSchema = z.object({
+    fullName: z.string().min(2, 'Full name must be at least 2 characters').optional(),
+    password: z.string().min(8, 'Password must be at least 8 characters').optional(), passwordConfirmation: z.string().optional(),
+}).refine(
+    data => {
+        if (!data.password && !data.passwordConfirmation) return true
+        return data.password === data.passwordConfirmation
+    },
+    {
         message: "Passwords don't match",
         path: ['passwordConfirmation'],
-    })
-
-export const updateProfileSchema = z
-    .object({
-        fullName: z.string().min(2, 'Full name must be at least 2 characters').optional(),
-        password: z.string().min(8, 'Password must be at least 8 characters').optional(),
-        passwordConfirmation: z.string().optional(),
-    })
-    .refine(
-        data => {
-            if (!data.password && !data.passwordConfirmation) return true
-            return data.password === data.passwordConfirmation
-        },
-        {
-            message: "Passwords don't match",
-            path: ['passwordConfirmation'],
-        }
-    )
+    }
+)
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>
 export type RegisterInput = z.infer<typeof registerSchema>

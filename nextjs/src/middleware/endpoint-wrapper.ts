@@ -21,7 +21,7 @@ export async function withMiddleware(
     return async (request: NextRequest) => {
         const correlationId = generateCorrelationId()
         const clientIp = getClientIp(request)
-        const { valid, userId } = verifyTokenFromCookie(request)
+        const { userId } = verifyTokenFromCookie(request)
         const endpoint = new URL(request.url).pathname
         const method = request.method
 
@@ -82,16 +82,24 @@ export async function withMiddleware(
                             ? AuditAction.DELETE
                             : AuditAction.UPDATE
 
-                createAuditLog({
-                    userId: userId || 'anonymous',
-                    action,
-                    entity,
-                    entityId: extractIdFromUrl(endpoint),
-                    ipAddress: clientIp,
-                    userAgent: request.headers.get('user-agent') || undefined,
-                    status: 'SUCCESS',
-                    metadata: { correlationId, statusCode: response.status },
-                }).catch(() => { })
+                try {
+                    await createAuditLog({
+                        userId: userId || 'anonymous',
+                        action,
+                        entity,
+                        entityId: extractIdFromUrl(endpoint),
+                        ipAddress: clientIp,
+                        userAgent: request.headers.get('user-agent') || undefined,
+                        status: 'SUCCESS',
+                        metadata: { correlationId, statusCode: response.status },
+                    })
+                } catch (auditError) {
+                    // Log audit failure but don't fail the request
+                    console.error('[Endpoint] Failed to create audit log:', auditError, {
+                        correlationId,
+                        endpoint,
+                    })
+                }
             }
 
             // Add correlation header to response
@@ -101,7 +109,16 @@ export async function withMiddleware(
 
             return response
         } catch (error) {
-            // Error tracking
+            // Error tracking and logging
+            const errorMessage = error instanceof Error ? error.message : String(error)
+            console.error('[Endpoint] Handler error:', {
+                error: errorMessage,
+                correlationId,
+                endpoint,
+                method,
+                userId: userId?.toString(),
+            })
+
             captureException(error, {
                 correlationId,
                 endpoint,
@@ -111,17 +128,25 @@ export async function withMiddleware(
 
             // Audit log failures
             if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-                createAuditLog({
-                    userId: userId || 'anonymous',
-                    action: AuditAction.UPDATE,
-                    entity,
-                    entityId: extractIdFromUrl(endpoint),
-                    ipAddress: clientIp,
-                    userAgent: request.headers.get('user-agent') || undefined,
-                    status: 'FAILURE',
-                    errorMessage: error instanceof Error ? error.message : String(error),
-                    metadata: { correlationId },
-                }).catch(() => { })
+                try {
+                    await createAuditLog({
+                        userId: userId || 'anonymous',
+                        action: AuditAction.UPDATE,
+                        entity,
+                        entityId: extractIdFromUrl(endpoint),
+                        ipAddress: clientIp,
+                        userAgent: request.headers.get('user-agent') || undefined,
+                        status: 'FAILURE',
+                        errorMessage,
+                        metadata: { correlationId },
+                    })
+                } catch (auditError) {
+                    // Log audit failure but don't fail the response
+                    console.error('[Endpoint] Failed to create failure audit log:', auditError, {
+                        correlationId,
+                        endpoint,
+                    })
+                }
             }
 
             return NextResponse.json(
