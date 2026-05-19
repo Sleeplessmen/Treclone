@@ -14,7 +14,7 @@ export const updateCardSchema = z.object({
 })
 
 export const moveCardSchema = z.object({
-    listId: z.bigint('List ID is required'),
+    listId: z.coerce.bigint(),
     position: z.number().int().min(0, 'Position must be 0 or greater'),
 })
 

@@ -4,7 +4,7 @@ import { verifyTokenFromCookie } from '@/lib/auth-utils'
 
 const controller = new AuthController()
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
     const { valid, userId } = verifyTokenFromCookie(request)
     if (!valid || !userId) {
         return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
