@@ -46,7 +46,7 @@ interface WorkspaceSettingsResponse {
 }
 
 // Create workspace
-export function useCreateWorkspace(token?: string) {
+export function useCreateWorkspace() {
     const queryClient = useQueryClient()
 
     return useMutation<WorkspaceResponse, Error, CreateWorkspaceInput>({
@@ -55,8 +55,8 @@ export function useCreateWorkspace(token?: string) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token || localStorage.getItem('authToken')}`,
                 },
+                credentials: 'include',
                 body: JSON.stringify(data),
             })
 
@@ -74,7 +74,7 @@ export function useCreateWorkspace(token?: string) {
 }
 
 // Update workspace
-export function useUpdateWorkspace(workspaceId: string, token?: string) {
+export function useUpdateWorkspace(workspaceId: string) {
     const queryClient = useQueryClient()
 
     return useMutation<WorkspaceResponse, Error, UpdateWorkspaceInput>({
@@ -83,8 +83,8 @@ export function useUpdateWorkspace(workspaceId: string, token?: string) {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token || localStorage.getItem('authToken')}`,
                 },
+                credentials: 'include',
                 body: JSON.stringify(data),
             })
 
@@ -103,7 +103,7 @@ export function useUpdateWorkspace(workspaceId: string, token?: string) {
 }
 
 // Delete workspace
-export function useDeleteWorkspace(workspaceId: string, token?: string) {
+export function useDeleteWorkspace(workspaceId: string) {
     const queryClient = useQueryClient()
 
     return useMutation<WorkspaceResponse, Error>({
@@ -112,8 +112,8 @@ export function useDeleteWorkspace(workspaceId: string, token?: string) {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token || localStorage.getItem('authToken')}`,
                 },
+                credentials: 'include',
             })
 
             if (!response.ok) {
@@ -131,10 +131,7 @@ export function useDeleteWorkspace(workspaceId: string, token?: string) {
 }
 
 // Update workspace settings
-export function useUpdateWorkspaceSettings(
-    workspaceId: string,
-    token?: string
-) {
+export function useUpdateWorkspaceSettings(workspaceId: string) {
     const queryClient = useQueryClient()
 
     return useMutation<
@@ -149,8 +146,8 @@ export function useUpdateWorkspaceSettings(
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token || localStorage.getItem('authToken')}`,
                     },
+                    credentials: 'include',
                     body: JSON.stringify(data),
                 }
             )

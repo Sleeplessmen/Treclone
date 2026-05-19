@@ -1,19 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { registerSchema, type RegisterInput } from '@/lib/validation/auth';
+import { useAuth } from '@/hooks/auth/use-auth';
 
 export function UserRegisterForm() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
+  const { register: registerUser, isLoading } = useAuth();
+  const [apiError, setApiError] = React.useState<string | null>(null);
 
   const {
     register,
@@ -24,29 +24,15 @@ export function UserRegisterForm() {
   });
 
   const onSubmit = async (data: RegisterInput) => {
-    setIsLoading(true);
     setApiError(null);
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Registration failed');
-      }
-
+      await registerUser(data.email, data.password, data.fullName);
       router.push('/workspaces');
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'An error occurred';
       setApiError(message);
-    } finally {
-      setIsLoading(false);
     }
   };
 

@@ -33,7 +33,7 @@ interface WorkspaceSettingsResponse {
 }
 
 // Fetch all workspaces
-export function useWorkspaces(token?: string) {
+export function useWorkspaces() {
     return useQuery<FetchWorkspacesResponse, Error>({
         queryKey: ['workspaces'],
         queryFn: async () => {
@@ -41,8 +41,8 @@ export function useWorkspaces(token?: string) {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token || localStorage.getItem('authToken')}`,
                 },
+                credentials: 'include',
             })
 
             if (!response.ok) {
@@ -52,12 +52,11 @@ export function useWorkspaces(token?: string) {
 
             return response.json()
         },
-        enabled: !!token || !!localStorage.getItem('authToken'),
     })
 }
 
 // Fetch workspace settings
-export function useWorkspaceSettings(workspaceId: string, token?: string) {
+export function useWorkspaceSettings(workspaceId: string) {
     return useQuery<WorkspaceSettingsResponse, Error>({
         queryKey: ['workspaceSettings', workspaceId],
         queryFn: async () => {
@@ -65,8 +64,8 @@ export function useWorkspaceSettings(workspaceId: string, token?: string) {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token || localStorage.getItem('authToken')}`,
                 },
+                credentials: 'include',
             })
 
             if (!response.ok) {
@@ -76,6 +75,5 @@ export function useWorkspaceSettings(workspaceId: string, token?: string) {
 
             return response.json()
         },
-        enabled: !!token || !!localStorage.getItem('authToken'),
     })
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -10,11 +10,12 @@ import {
   forgotPasswordSchema,
   type ForgotPasswordInput,
 } from '@/lib/validation/auth';
+import { useForgotPassword } from '@/hooks/auth/use-forgot-password';
 
 export function ForgotPasswordForm() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const { mutate: forgotPassword, isPending: isLoading } = useForgotPassword();
+  const [apiError, setApiError] = React.useState<string | null>(null);
+  const [success, setSuccess] = React.useState(false);
 
   const {
     register,
@@ -26,30 +27,19 @@ export function ForgotPasswordForm() {
   });
 
   const onSubmit = async (data: ForgotPasswordInput) => {
-    setIsLoading(true);
     setApiError(null);
 
-    try {
-      const response = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to send reset email');
-      }
-
-      setSuccess(true);
-      reset();
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'An error occurred';
-      setApiError(message);
-    } finally {
-      setIsLoading(false);
-    }
+    forgotPassword(data, {
+      onSuccess: () => {
+        setSuccess(true);
+        reset();
+      },
+      onError: (error) => {
+        const message =
+          error instanceof Error ? error.message : 'An error occurred';
+        setApiError(message);
+      },
+    });
   };
 
   if (success) {

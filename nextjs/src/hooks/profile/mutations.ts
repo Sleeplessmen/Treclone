@@ -20,7 +20,7 @@ interface ProfileResponse {
 }
 
 // Update user profile
-export function useUpdateProfile(token?: string) {
+export function useUpdateProfile() {
     const queryClient = useQueryClient()
 
     return useMutation<ProfileResponse, Error, UpdateProfileInput>({
@@ -29,8 +29,8 @@ export function useUpdateProfile(token?: string) {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token || localStorage.getItem('authToken')}`,
                 },
+                credentials: 'include',
                 body: JSON.stringify(data),
             })
 

@@ -26,7 +26,7 @@ interface FetchBoardResponse {
 }
 
 // Fetch all boards in workspace
-export function useBoards(workspaceId: string, token?: string) {
+export function useBoards(workspaceId: string) {
     return useQuery<FetchBoardsResponse, Error>({
         queryKey: ['boards', workspaceId],
         queryFn: async () => {
@@ -34,8 +34,8 @@ export function useBoards(workspaceId: string, token?: string) {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token || localStorage.getItem('authToken')}`,
                 },
+                credentials: 'include',
             })
 
             if (!response.ok) {
@@ -45,12 +45,11 @@ export function useBoards(workspaceId: string, token?: string) {
 
             return response.json()
         },
-        enabled: !!token || !!localStorage.getItem('authToken'),
     })
 }
 
 // Fetch single board
-export function useBoard(boardId: string, token?: string) {
+export function useBoard(boardId: string) {
     return useQuery<FetchBoardResponse, Error>({
         queryKey: ['board', boardId],
         queryFn: async () => {
@@ -60,8 +59,8 @@ export function useBoard(boardId: string, token?: string) {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token || localStorage.getItem('authToken')}`,
                     },
+                    credentials: 'include',
                 }
             )
 
@@ -72,6 +71,5 @@ export function useBoard(boardId: string, token?: string) {
 
             return response.json()
         },
-        enabled: !!token || !!localStorage.getItem('authToken'),
     })
 }

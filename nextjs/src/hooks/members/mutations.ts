@@ -29,7 +29,7 @@ interface MemberResponse {
 }
 
 // Add member to workspace
-export function useAddMember(workspaceId: string, token?: string) {
+export function useAddMember(workspaceId: string) {
     const queryClient = useQueryClient()
 
     return useMutation<MemberResponse, Error, AddMemberInput>({
@@ -40,8 +40,8 @@ export function useAddMember(workspaceId: string, token?: string) {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token || localStorage.getItem('authToken')}`,
                     },
+                    credentials: 'include',
                     body: JSON.stringify(data),
                 }
             )
@@ -60,7 +60,7 @@ export function useAddMember(workspaceId: string, token?: string) {
 }
 
 // Remove member from workspace
-export function useRemoveMember(workspaceId: string, token?: string) {
+export function useRemoveMember(workspaceId: string) {
     const queryClient = useQueryClient()
 
     return useMutation<MemberResponse, Error, RemoveMemberInput>({
@@ -71,8 +71,8 @@ export function useRemoveMember(workspaceId: string, token?: string) {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token || localStorage.getItem('authToken')}`,
                     },
+                    credentials: 'include',
                 }
             )
 

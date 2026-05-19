@@ -27,7 +27,7 @@ interface BoardResponse {
 }
 
 // Create board
-export function useCreateBoard(workspaceId: string, token?: string) {
+export function useCreateBoard(workspaceId: string) {
     const queryClient = useQueryClient()
 
     return useMutation<BoardResponse, Error, CreateBoardInput>({
@@ -38,8 +38,8 @@ export function useCreateBoard(workspaceId: string, token?: string) {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token || localStorage.getItem('authToken')}`,
                     },
+                    credentials: 'include',
                     body: JSON.stringify(data),
                 }
             )
@@ -58,7 +58,7 @@ export function useCreateBoard(workspaceId: string, token?: string) {
 }
 
 // Update board
-export function useUpdateBoard(boardId: string, token?: string) {
+export function useUpdateBoard(boardId: string) {
     const queryClient = useQueryClient()
 
     return useMutation<BoardResponse, Error, UpdateBoardInput>({
@@ -67,8 +67,8 @@ export function useUpdateBoard(boardId: string, token?: string) {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token || localStorage.getItem('authToken')}`,
                 },
+                credentials: 'include',
                 body: JSON.stringify(data),
             })
 
@@ -86,7 +86,7 @@ export function useUpdateBoard(boardId: string, token?: string) {
 }
 
 // Delete board
-export function useDeleteBoard(workspaceId: string, boardId: string, token?: string) {
+export function useDeleteBoard(workspaceId: string, boardId: string) {
     const queryClient = useQueryClient()
 
     return useMutation<BoardResponse, Error>({
@@ -97,8 +97,8 @@ export function useDeleteBoard(workspaceId: string, boardId: string, token?: str
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token || localStorage.getItem('authToken')}`,
                     },
+                    credentials: 'include',
                 }
             )
 

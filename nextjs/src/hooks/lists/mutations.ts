@@ -25,7 +25,7 @@ interface ListResponse {
 }
 
 // Create list
-export function useCreateList(boardId: string, token?: string) {
+export function useCreateList(boardId: string) {
     const queryClient = useQueryClient()
 
     return useMutation<ListResponse, Error, CreateListInput>({
@@ -36,8 +36,8 @@ export function useCreateList(boardId: string, token?: string) {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token || localStorage.getItem('authToken')}`,
                     },
+                    credentials: 'include',
                     body: JSON.stringify(data),
                 }
             )
@@ -56,7 +56,7 @@ export function useCreateList(boardId: string, token?: string) {
 }
 
 // Update list
-export function useUpdateList(listId: string, token?: string) {
+export function useUpdateList(listId: string) {
     const queryClient = useQueryClient()
 
     return useMutation<ListResponse, Error, UpdateListInput>({
@@ -67,8 +67,8 @@ export function useUpdateList(listId: string, token?: string) {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token || localStorage.getItem('authToken')}`,
                     },
+                    credentials: 'include',
                     body: JSON.stringify(data),
                 }
             )
@@ -87,7 +87,7 @@ export function useUpdateList(listId: string, token?: string) {
 }
 
 // Delete list
-export function useDeleteList(listId: string, token?: string) {
+export function useDeleteList(listId: string) {
     const queryClient = useQueryClient()
 
     return useMutation<ListResponse, Error>({
@@ -98,8 +98,8 @@ export function useDeleteList(listId: string, token?: string) {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token || localStorage.getItem('authToken')}`,
                     },
+                    credentials: 'include',
                 }
             )
 

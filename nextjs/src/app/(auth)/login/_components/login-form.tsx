@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,11 +9,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import { loginSchema, type LoginInput } from '@/lib/validation/auth';
+import { useAuth } from '@/hooks/auth/use-auth';
 
 export function UserLoginForm() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
+  const { login, isLoading } = useAuth();
+  const [apiError, setApiError] = React.useState<string | null>(null);
 
   const {
     register,
@@ -24,29 +25,15 @@ export function UserLoginForm() {
   });
 
   const onSubmit = async (data: LoginInput) => {
-    setIsLoading(true);
     setApiError(null);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Login failed');
-      }
-
+      await login(data.email, data.password);
       router.push('/workspaces');
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'An error occurred';
       setApiError(message);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -71,7 +58,7 @@ export function UserLoginForm() {
         <div className="flex justify-between items-center">
           <Label htmlFor="password">Password</Label>
           <Link
-            href="/auth/forgot-password"
+            href="/forgot-password"
             className="text-label-sm text-primary hover:text-primary-container"
           >
             Forgot?
