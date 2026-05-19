@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { successResponse, errorResponse, convertBigIntToString } from '@/lib/api-utils'
-import { WorkspaceService } from '@/lib/services/workspace.service'
+import { ListService } from '@/lib/services/list.service'
 import { handleAuthError } from '@/lib/utils/error-handler'
 
-export class WorkspaceController {
-    private readonly service = new WorkspaceService()
+export class ListController {
+    private readonly service = new ListService()
 
-    async getWorkspaces(request: NextRequest, userId: bigint) {
+    async getLists(request: NextRequest, boardId: bigint, userId: bigint) {
         try {
-            const workspaces = await this.service.getWorkspacesByUserId(userId)
+            const lists = await this.service.getListsByBoardId(boardId, userId)
 
             return NextResponse.json(
                 successResponse({
-                    message: 'Workspaces fetched successfully',
-                    workspaces: convertBigIntToString(workspaces),
+                    message: 'Lists fetched successfully',
+                    lists: convertBigIntToString(lists),
                 })
             )
         } catch (error) {
@@ -25,16 +25,16 @@ export class WorkspaceController {
         }
     }
 
-    async createWorkspace(request: NextRequest, userId: bigint) {
+    async createList(request: NextRequest, boardId: bigint, userId: bigint) {
         try {
             const body = await request.json()
-            const workspace = await this.service.createWorkspace(userId, body)
+            const list = await this.service.createList(boardId, userId, body)
 
             return NextResponse.json(
                 successResponse(
                     {
-                        message: 'Workspace created successfully',
-                        workspace: convertBigIntToString(workspace),
+                        message: 'List created successfully',
+                        list: convertBigIntToString(list),
                     }
                 ),
                 { status: 201 }
@@ -48,14 +48,14 @@ export class WorkspaceController {
         }
     }
 
-    async getWorkspace(request: NextRequest, workspaceId: bigint, userId: bigint) {
+    async getList(request: NextRequest, listId: bigint, userId: bigint) {
         try {
-            const workspace = await this.service.getWorkspaceById(workspaceId, userId)
+            const list = await this.service.getListById(listId, userId)
 
             return NextResponse.json(
                 successResponse({
-                    message: 'Workspace fetched successfully',
-                    workspace: convertBigIntToString(workspace),
+                    message: 'List fetched successfully',
+                    list: convertBigIntToString(list),
                 })
             )
         } catch (error) {
@@ -67,19 +67,15 @@ export class WorkspaceController {
         }
     }
 
-    async updateWorkspace(
-        request: NextRequest,
-        workspaceId: bigint,
-        userId: bigint
-    ) {
+    async updateList(request: NextRequest, listId: bigint, userId: bigint) {
         try {
             const body = await request.json()
-            const workspace = await this.service.updateWorkspace(workspaceId, userId, body)
+            const list = await this.service.updateList(listId, userId, body)
 
             return NextResponse.json(
                 successResponse({
-                    message: 'Workspace updated successfully',
-                    workspace: convertBigIntToString(workspace),
+                    message: 'List updated successfully',
+                    list: convertBigIntToString(list),
                 })
             )
         } catch (error) {
@@ -91,17 +87,13 @@ export class WorkspaceController {
         }
     }
 
-    async deleteWorkspace(
-        request: NextRequest,
-        workspaceId: bigint,
-        userId: bigint
-    ) {
+    async deleteList(request: NextRequest, listId: bigint, userId: bigint) {
         try {
-            await this.service.deleteWorkspace(workspaceId, userId)
+            await this.service.deleteList(listId, userId)
 
             return NextResponse.json(
                 successResponse({
-                    message: 'Workspace deleted successfully',
+                    message: 'List deleted successfully',
                 })
             )
         } catch (error) {

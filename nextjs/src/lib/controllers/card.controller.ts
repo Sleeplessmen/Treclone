@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { successResponse, errorResponse, convertBigIntToString } from '@/lib/api-utils'
-import { WorkspaceService } from '@/lib/services/workspace.service'
+import { CardService } from '@/lib/services/card.service'
 import { handleAuthError } from '@/lib/utils/error-handler'
 
-export class WorkspaceController {
-    private readonly service = new WorkspaceService()
+export class CardController {
+    private readonly service = new CardService()
 
-    async getWorkspaces(request: NextRequest, userId: bigint) {
+    async getCards(request: NextRequest, listId: bigint, userId: bigint) {
         try {
-            const workspaces = await this.service.getWorkspacesByUserId(userId)
+            const cards = await this.service.getCardsByListId(listId, userId)
 
             return NextResponse.json(
                 successResponse({
-                    message: 'Workspaces fetched successfully',
-                    workspaces: convertBigIntToString(workspaces),
+                    message: 'Cards fetched successfully',
+                    cards: convertBigIntToString(cards),
                 })
             )
         } catch (error) {
@@ -25,17 +25,18 @@ export class WorkspaceController {
         }
     }
 
-    async createWorkspace(request: NextRequest, userId: bigint) {
+    async createCard(request: NextRequest, listId: bigint, userId: bigint) {
         try {
             const body = await request.json()
-            const workspace = await this.service.createWorkspace(userId, body)
+            const card = await this.service.createCard(listId, userId, body)
 
             return NextResponse.json(
                 successResponse(
                     {
-                        message: 'Workspace created successfully',
-                        workspace: convertBigIntToString(workspace),
-                    }
+                        message: 'Card created successfully',
+                        card: convertBigIntToString(card),
+                    },
+                    201
                 ),
                 { status: 201 }
             )
@@ -48,14 +49,14 @@ export class WorkspaceController {
         }
     }
 
-    async getWorkspace(request: NextRequest, workspaceId: bigint, userId: bigint) {
+    async getCard(request: NextRequest, cardId: bigint, userId: bigint) {
         try {
-            const workspace = await this.service.getWorkspaceById(workspaceId, userId)
+            const card = await this.service.getCardById(cardId, userId)
 
             return NextResponse.json(
                 successResponse({
-                    message: 'Workspace fetched successfully',
-                    workspace: convertBigIntToString(workspace),
+                    message: 'Card fetched successfully',
+                    card: convertBigIntToString(card),
                 })
             )
         } catch (error) {
@@ -67,19 +68,15 @@ export class WorkspaceController {
         }
     }
 
-    async updateWorkspace(
-        request: NextRequest,
-        workspaceId: bigint,
-        userId: bigint
-    ) {
+    async updateCard(request: NextRequest, cardId: bigint, userId: bigint) {
         try {
             const body = await request.json()
-            const workspace = await this.service.updateWorkspace(workspaceId, userId, body)
+            const card = await this.service.updateCard(cardId, userId, body)
 
             return NextResponse.json(
                 successResponse({
-                    message: 'Workspace updated successfully',
-                    workspace: convertBigIntToString(workspace),
+                    message: 'Card updated successfully',
+                    card: convertBigIntToString(card),
                 })
             )
         } catch (error) {
@@ -91,17 +88,33 @@ export class WorkspaceController {
         }
     }
 
-    async deleteWorkspace(
-        request: NextRequest,
-        workspaceId: bigint,
-        userId: bigint
-    ) {
+    async moveCard(request: NextRequest, cardId: bigint, userId: bigint) {
         try {
-            await this.service.deleteWorkspace(workspaceId, userId)
+            const body = await request.json()
+            const card = await this.service.moveCard(cardId, userId, body)
 
             return NextResponse.json(
                 successResponse({
-                    message: 'Workspace deleted successfully',
+                    message: 'Card moved successfully',
+                    card: convertBigIntToString(card),
+                })
+            )
+        } catch (error) {
+            const authError = handleAuthError(error)
+            return NextResponse.json(
+                errorResponse(authError.message, authError.statusCode),
+                { status: authError.statusCode }
+            )
+        }
+    }
+
+    async deleteCard(request: NextRequest, cardId: bigint, userId: bigint) {
+        try {
+            await this.service.deleteCard(cardId, userId)
+
+            return NextResponse.json(
+                successResponse({
+                    message: 'Card deleted successfully',
                 })
             )
         } catch (error) {

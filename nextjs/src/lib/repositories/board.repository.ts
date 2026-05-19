@@ -1,93 +1,95 @@
 import prisma from '@/lib/prisma'
 
-export class WorkspaceRepository {
-    async getWorkspacesByUserId(userId: bigint) {
-        return prisma.workspace.findMany({
-            where: { ownerId: userId },
+export class BoardRepository {
+    async getBoardsByWorkspaceId(workspaceId: bigint) {
+        return prisma.board.findMany({
+            where: { workspaceId },
             select: {
                 id: true,
-                name: true,
+                title: true,
                 description: true,
                 ownerId: true,
-                visibility: true,
+                workspaceId: true,
                 createdAt: true,
                 updatedAt: true,
                 _count: {
-                    select: { boards: true, members: true },
+                    select: { lists: true },
                 },
             },
             orderBy: { createdAt: 'desc' },
         })
     }
 
-    async getWorkspaceById(workspaceId: bigint) {
-        return prisma.workspace.findUnique({
-            where: { id: workspaceId },
+    async getBoardById(boardId: bigint) {
+        return prisma.board.findUnique({
+            where: { id: boardId },
             select: {
                 id: true,
-                name: true,
+                title: true,
                 description: true,
                 ownerId: true,
-                visibility: true,
+                workspaceId: true,
                 createdAt: true,
                 updatedAt: true,
                 _count: {
-                    select: { boards: true, members: true },
+                    select: { lists: true, boardMembers: true },
                 },
             },
         })
     }
 
-    async createWorkspace(
+    async createBoard(
+        workspaceId: bigint,
         userId: bigint,
         data: {
-            name: string
+            title: string
             description?: string
         }
     ) {
-        return prisma.workspace.create({
+        return prisma.board.create({
             data: {
-                name: data.name,
+                title: data.title,
                 description: data.description,
                 ownerId: userId,
+                workspaceId: workspaceId,
             },
             select: {
                 id: true,
-                name: true,
+                title: true,
                 description: true,
                 ownerId: true,
-                visibility: true,
+                workspaceId: true,
                 createdAt: true,
                 updatedAt: true,
             },
         })
     }
 
-    async updateWorkspace(
-        workspaceId: bigint,
+    async updateBoard(
+        boardId: bigint,
         data: {
-            name?: string
+            title?: string
             description?: string
         }
     ) {
-        return prisma.workspace.update({
-            where: { id: workspaceId },
+        return prisma.board.update({
+            where: { id: boardId },
             data,
             select: {
                 id: true,
-                name: true,
+                title: true,
                 description: true,
                 ownerId: true,
-                visibility: true,
+                workspaceId: true,
                 createdAt: true,
                 updatedAt: true,
             },
         })
     }
 
-    async deleteWorkspace(workspaceId: bigint) {
-        return prisma.workspace.delete({
-            where: { id: workspaceId },
+    async deleteBoard(boardId: bigint) {
+        return prisma.board.delete({
+            where: { id: boardId },
             select: { id: true },
         })
     }

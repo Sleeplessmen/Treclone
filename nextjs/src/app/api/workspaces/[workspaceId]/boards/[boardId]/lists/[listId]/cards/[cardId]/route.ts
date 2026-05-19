@@ -1,48 +1,48 @@
 import { NextRequest } from 'next/server'
-import { WorkspaceController } from '@/lib/controllers/workspace.controller'
+import { CardController } from '@/lib/controllers/card.controller'
 import { verifyTokenFromCookie } from '@/lib/auth-utils'
 import { errorResponse } from '@/lib/api-utils'
 
-const controller = new WorkspaceController()
+const controller = new CardController()
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { workspaceId: string } }
+    { params }: { params: Promise<{ cardId: string }> }
 ) {
+    const { cardId } = await params
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
         return errorResponse('Unauthorized', 401)
     }
 
-    const workspaceId = BigInt(params.workspaceId)
-    return controller.getWorkspace(request, workspaceId, userId)
+    return controller.getCard(request, BigInt(cardId), userId)
 }
 
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { workspaceId: string } }
+    { params }: { params: Promise<{ cardId: string }> }
 ) {
+    const { cardId } = await params
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
         return errorResponse('Unauthorized', 401)
     }
 
-    const workspaceId = BigInt(params.workspaceId)
-    return controller.updateWorkspace(request, workspaceId, userId)
+    return controller.updateCard(request, BigInt(cardId), userId)
 }
 
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { workspaceId: string } }
+    { params }: { params: Promise<{ cardId: string }> }
 ) {
+    const { cardId } = await params
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
         return errorResponse('Unauthorized', 401)
     }
 
-    const workspaceId = BigInt(params.workspaceId)
-    return controller.deleteWorkspace(request, workspaceId, userId)
+    return controller.deleteCard(request, BigInt(cardId), userId)
 }

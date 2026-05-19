@@ -1,19 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { successResponse, errorResponse, convertBigIntToString } from '@/lib/api-utils'
-import { WorkspaceService } from '@/lib/services/workspace.service'
+import { BoardService } from '@/lib/services/board.service'
 import { handleAuthError } from '@/lib/utils/error-handler'
 
-export class WorkspaceController {
-    private readonly service = new WorkspaceService()
+export class BoardController {
+    private readonly service = new BoardService()
 
-    async getWorkspaces(request: NextRequest, userId: bigint) {
+    async getBoards(
+        request: NextRequest,
+        workspaceId: bigint,
+        userId: bigint
+    ) {
         try {
-            const workspaces = await this.service.getWorkspacesByUserId(userId)
+            const boards = await this.service.getBoardsByWorkspaceId(workspaceId, userId)
 
             return NextResponse.json(
                 successResponse({
-                    message: 'Workspaces fetched successfully',
-                    workspaces: convertBigIntToString(workspaces),
+                    message: 'Boards fetched successfully',
+                    boards: convertBigIntToString(boards),
                 })
             )
         } catch (error) {
@@ -25,16 +29,20 @@ export class WorkspaceController {
         }
     }
 
-    async createWorkspace(request: NextRequest, userId: bigint) {
+    async createBoard(
+        request: NextRequest,
+        workspaceId: bigint,
+        userId: bigint
+    ) {
         try {
             const body = await request.json()
-            const workspace = await this.service.createWorkspace(userId, body)
+            const board = await this.service.createBoard(workspaceId, userId, body)
 
             return NextResponse.json(
                 successResponse(
                     {
-                        message: 'Workspace created successfully',
-                        workspace: convertBigIntToString(workspace),
+                        message: 'Board created successfully',
+                        board: convertBigIntToString(board),
                     }
                 ),
                 { status: 201 }
@@ -48,14 +56,14 @@ export class WorkspaceController {
         }
     }
 
-    async getWorkspace(request: NextRequest, workspaceId: bigint, userId: bigint) {
+    async getBoard(request: NextRequest, boardId: bigint, userId: bigint) {
         try {
-            const workspace = await this.service.getWorkspaceById(workspaceId, userId)
+            const board = await this.service.getBoardById(boardId, userId)
 
             return NextResponse.json(
                 successResponse({
-                    message: 'Workspace fetched successfully',
-                    workspace: convertBigIntToString(workspace),
+                    message: 'Board fetched successfully',
+                    board: convertBigIntToString(board),
                 })
             )
         } catch (error) {
@@ -67,19 +75,15 @@ export class WorkspaceController {
         }
     }
 
-    async updateWorkspace(
-        request: NextRequest,
-        workspaceId: bigint,
-        userId: bigint
-    ) {
+    async updateBoard(request: NextRequest, boardId: bigint, userId: bigint) {
         try {
             const body = await request.json()
-            const workspace = await this.service.updateWorkspace(workspaceId, userId, body)
+            const board = await this.service.updateBoard(boardId, userId, body)
 
             return NextResponse.json(
                 successResponse({
-                    message: 'Workspace updated successfully',
-                    workspace: convertBigIntToString(workspace),
+                    message: 'Board updated successfully',
+                    board: convertBigIntToString(board),
                 })
             )
         } catch (error) {
@@ -91,17 +95,13 @@ export class WorkspaceController {
         }
     }
 
-    async deleteWorkspace(
-        request: NextRequest,
-        workspaceId: bigint,
-        userId: bigint
-    ) {
+    async deleteBoard(request: NextRequest, boardId: bigint, userId: bigint) {
         try {
-            await this.service.deleteWorkspace(workspaceId, userId)
+            await this.service.deleteBoard(boardId, userId)
 
             return NextResponse.json(
                 successResponse({
-                    message: 'Workspace deleted successfully',
+                    message: 'Board deleted successfully',
                 })
             )
         } catch (error) {
