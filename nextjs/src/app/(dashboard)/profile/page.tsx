@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/auth/use-auth';
 import { useProfile, useUpdateProfile } from '@/hooks/profile';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import {
   Card,
   CardContent,
@@ -24,7 +25,6 @@ export default function ProfilePage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
 
-  // Redirect to login if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
@@ -128,25 +128,25 @@ export default function ProfilePage() {
         <CardContent className="space-y-gap-lg">
           {/* Full Name */}
           <div>
-            <label className="text-label-sm font-semibold text-ink block mb-gap-xs">
+            <Label className="text-label-sm font-semibold text-ink mb-gap-xs">
               Full Name
-            </label>
+            </Label>
             <p className="text-body text-ink-muted">{profile.fullName}</p>
           </div>
 
           {/* Email */}
           <div>
-            <label className="text-label-sm font-semibold text-ink block mb-gap-xs">
+            <Label className="text-label-sm font-semibold text-ink mb-gap-xs">
               Email Address
-            </label>
+            </Label>
             <p className="text-body text-ink-muted">{profile.email}</p>
           </div>
 
           {/* Account Status */}
           <div>
-            <label className="text-label-sm font-semibold text-ink block mb-gap-xs">
+            <Label className="text-label-sm font-semibold text-ink mb-gap-xs">
               Account Status
-            </label>
+            </Label>
             <div className="flex items-center gap-gap-sm">
               <div className="w-2 h-2 bg-green-500 rounded-full" />
               <p className="text-body text-ink-muted">Active</p>
@@ -155,9 +155,9 @@ export default function ProfilePage() {
 
           {/* Last Updated */}
           <div>
-            <label className="text-label-sm font-semibold text-ink block mb-gap-xs">
+            <Label className="text-label-sm font-semibold text-ink mb-gap-xs">
               Last Updated
-            </label>
+            </Label>
             <p className="text-body text-ink-muted">
               {new Date(profile.updatedAt).toLocaleDateString('en-US', {
                 year: 'numeric',
