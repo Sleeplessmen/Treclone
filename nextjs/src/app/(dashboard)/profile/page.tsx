@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/hooks';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/auth/use-auth';
+import { useProfile, useUpdateProfile } from '@/hooks/profile';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -11,68 +13,44 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Edit2, LogOut } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-
-interface UserProfile {
-  boards: number;
-  tasks: number;
-  teamMembers: number;
-  recentActivity: Array<{
-    id: string;
-    action: string;
-    target: string;
-    timestamp: string;
-  }>;
-}
+import { Edit2 } from 'lucide-react';
+import { EditProfileModal } from './_components/edit-profile-modal';
 
 export default function ProfilePage() {
-  const { user, isLoading: authLoading, logout } = useAuth();
   const router = useRouter();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isLoading: authLoading } = useAuth();
+  const { data: profileData, isLoading: profileLoading } = useProfile();
+  const { mutate: updateProfile, isPending: isUpdating } = useUpdateProfile();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
 
+  // Redirect to login if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/auth/login');
+      router.push('/login');
     }
   }, [authLoading, user, router]);
 
-  useEffect(() => {
-    async function fetchProfile() {
-      if (!user) return;
+  const handleUpdateProfile = (data: {
+    fullName?: string;
+    password?: string;
+    passwordConfirmation?: string;
+  }) => {
+    setEditError(null);
 
-      try {
-        const response = await fetch('/api/auth/me', {
-          credentials: 'include',
-        });
+    updateProfile(data, {
+      onSuccess: () => {
+        setIsEditModalOpen(false);
+      },
+      onError: (error) => {
+        const message =
+          error instanceof Error ? error.message : 'Failed to update profile';
+        setEditError(message);
+      },
+    });
+  };
 
-        if (response.ok) {
-          const data = await response.json();
-          // Parse the profile data from response
-          setProfile({
-            boards: data.workspaces?.length || 0,
-            tasks: 0,
-            teamMembers: 0,
-            recentActivity: [],
-          });
-        }
-      } catch (error) {
-        console.error('Failed to fetch profile:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchProfile();
-  }, [user]);
-
-  async function handleLogout() {
-    await logout();
-    router.push('/auth/login');
-  }
-
-  if (authLoading || isLoading) {
+  if (authLoading || profileLoading) {
     return (
       <main className="max-w-4xl mx-auto space-y-gap-lg">
         <Card>
@@ -90,9 +68,11 @@ export default function ProfilePage() {
     );
   }
 
-  if (!user) {
+  if (!user || !profileData?.user) {
     return null;
   }
+
+  const profile = profileData.user;
 
   return (
     <main className="max-w-4xl mx-auto space-y-gap-lg">
@@ -102,103 +82,107 @@ export default function ProfilePage() {
           <div className="flex items-start justify-between">
             <div className="flex gap-gap-lg items-start">
               {/* Avatar */}
-              <div className="w-20 h-20 bg-primary rounded-md flex items-center justify-center">
-                <span className="text-2xl font-heading text-white">
-                  {user.fullName.charAt(0).toUpperCase()}
+              <div className="w-20 h-20 bg-primary rounded-md flex items-center justify-center flex-shrink-0">
+                <span className="text-4xl font-heading text-white">
+                  {profile.fullName.charAt(0).toUpperCase()}
                 </span>
               </div>
               {/* User Info */}
               <div className="space-y-gap-sm">
                 <div>
                   <h1 className="text-headline-lg font-heading text-ink">
-                    {user.fullName}
+                    {profile.fullName}
                   </h1>
-                  <p className="text-body text-ink-muted">{user.email}</p>
+                  <p className="text-body text-ink-muted">{profile.email}</p>
                 </div>
                 <p className="text-label-sm text-ink-muted">
-                  Member since {new Date(user.id).getFullYear()}
+                  Account created on{' '}
+                  {new Date(profile.createdAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
                 </p>
               </div>
             </div>
-            <div className="space-y-gap-sm">
-              <Button variant="outline" size="sm">
-                <Edit2 className="h-4 w-4 mr-gap-sm" />
-                Edit Profile
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleLogout}
-                className="w-full"
-              >
-                <LogOut className="h-4 w-4 mr-gap-sm" />
-                Logout
-              </Button>
-            </div>
+
+            {/* Edit Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditModalOpen(true)}
+            >
+              <Edit2 className="h-4 w-4 mr-gap-sm" />
+              Edit Profile
+            </Button>
           </div>
         </CardHeader>
       </Card>
 
-      {/* Stats Grid */}
-      <div className="grid md:grid-cols-3 gap-gap-lg">
-        <Card>
-          <CardContent className="pt-gap-lg text-center space-y-gap-sm">
-            <div className="text-4xl font-heading text-primary">
-              {profile?.boards || 0}
-            </div>
-            <p className="text-body text-ink-muted">Active Workspaces</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-gap-lg text-center space-y-gap-sm">
-            <div className="text-4xl font-heading text-primary">
-              {profile?.tasks || 0}
-            </div>
-            <p className="text-body text-ink-muted">Tasks Completed</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-gap-lg text-center space-y-gap-sm">
-            <div className="text-4xl font-heading text-primary">
-              {profile?.teamMembers || 0}
-            </div>
-            <p className="text-body text-ink-muted">Team Members</p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Account Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Account Information</CardTitle>
+          <CardDescription>Your account details and settings</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-gap-lg">
+          {/* Full Name */}
+          <div>
+            <label className="text-label-sm font-semibold text-ink block mb-gap-xs">
+              Full Name
+            </label>
+            <p className="text-body text-ink-muted">{profile.fullName}</p>
+          </div>
 
-      {/* Recent Activity */}
-      {profile?.recentActivity && profile.recentActivity.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Your latest actions and updates</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-gap-md">
-              {profile.recentActivity.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="flex items-center justify-between py-gap-md border-b border-hairline-ghost last:border-b-0"
-                >
-                  <div>
-                    <p className="text-body text-ink">
-                      {activity.action}{' '}
-                      <span className="font-semibold text-primary">
-                        {activity.target}
-                      </span>
-                    </p>
-                    <p className="text-label-sm text-ink-muted">
-                      {activity.timestamp}
-                    </p>
-                  </div>
-                  <div className="w-2 h-2 bg-primary rounded-full" />
-                </div>
-              ))}
+          {/* Email */}
+          <div>
+            <label className="text-label-sm font-semibold text-ink block mb-gap-xs">
+              Email Address
+            </label>
+            <p className="text-body text-ink-muted">{profile.email}</p>
+          </div>
+
+          {/* Account Status */}
+          <div>
+            <label className="text-label-sm font-semibold text-ink block mb-gap-xs">
+              Account Status
+            </label>
+            <div className="flex items-center gap-gap-sm">
+              <div className="w-2 h-2 bg-green-500 rounded-full" />
+              <p className="text-body text-ink-muted">Active</p>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+
+          {/* Last Updated */}
+          <div>
+            <label className="text-label-sm font-semibold text-ink block mb-gap-xs">
+              Last Updated
+            </label>
+            <p className="text-body text-ink-muted">
+              {new Date(profile.updatedAt).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditError(null);
+        }}
+        onSubmit={handleUpdateProfile}
+        isLoading={isUpdating}
+        error={editError}
+        user={profile}
+      />
     </main>
   );
 }

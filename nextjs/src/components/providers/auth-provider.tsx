@@ -1,9 +1,9 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState, useMemo } from 'react';
 import { AuthContext, AuthContextType, User } from '@/lib/auth-context';
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: { readonly children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -16,7 +16,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function fetchCurrentUser() {
     try {
       const response = await fetch('/api/auth/me', {
-        credentials: 'include', // Send cookies
+        credentials: 'include',
       });
       if (response.ok) {
         const data = await response.json();
@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
-        credentials: 'include', // Include cookies
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -53,8 +53,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       await fetchCurrentUser();
-    } catch (error) {
-      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -76,8 +74,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       await fetchCurrentUser();
-    } catch (error) {
-      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -104,15 +100,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await fetchCurrentUser();
   }
 
-  const value: AuthContextType = {
-    user,
-    isLoading,
-    isAuthenticated,
-    login,
-    register,
-    logout,
-    refetch,
-  };
+  const value: AuthContextType = useMemo(
+    () => ({
+      user,
+      isLoading,
+      isAuthenticated,
+      login,
+      register,
+      logout,
+      refetch,
+    }),
+    [user, isLoading, isAuthenticated]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
