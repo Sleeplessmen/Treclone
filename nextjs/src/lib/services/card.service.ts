@@ -23,7 +23,7 @@ export class CardService {
                 select: { id: true, ownerId: true },
             })
 
-            if (!board || board.ownerId !== userId) {
+            if (board?.ownerId !== userId) {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,
@@ -57,7 +57,7 @@ export class CardService {
                 select: { id: true, ownerId: true },
             })
 
-            if (!board || board.ownerId !== userId) {
+            if (board?.ownerId !== userId) {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,
@@ -93,7 +93,7 @@ export class CardService {
                 select: { id: true, ownerId: true },
             })
 
-            if (!board || board.ownerId !== userId) {
+            if (board?.ownerId !== userId) {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,
@@ -135,7 +135,7 @@ export class CardService {
                 select: { id: true, ownerId: true },
             })
 
-            if (!board || board.ownerId !== userId) {
+            if (board?.ownerId !== userId) {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,
@@ -185,7 +185,7 @@ export class CardService {
                 select: { id: true, ownerId: true },
             })
 
-            if (!board || board.ownerId !== userId) {
+            if (board?.ownerId !== userId) {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,
@@ -201,7 +201,7 @@ export class CardService {
                 select: { id: true, boardId: true },
             })
 
-            if (!targetList || targetList.boardId !== board.id) {
+            if (targetList?.boardId !== board.id) {
                 throw new AuthError(
                     'Target list does not belong to this board',
                     400,
@@ -209,10 +209,11 @@ export class CardService {
                 )
             }
 
-            const moved = await this.repository.moveCard(cardId, {
-                listId: validatedData.listId,
-                position: validatedData.position,
-            })
+            const moved = await this.repository.moveCard(
+                cardId,
+                validatedData.listId,
+                validatedData.position
+            )
 
             return moved
         } catch (error) {
@@ -239,7 +240,7 @@ export class CardService {
                 select: { id: true, ownerId: true },
             })
 
-            if (!board || board.ownerId !== userId) {
+            if (board?.ownerId !== userId) {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,

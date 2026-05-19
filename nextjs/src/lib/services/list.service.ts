@@ -52,7 +52,7 @@ export class ListService {
                 select: { id: true, ownerId: true },
             })
 
-            if (!board || board.ownerId !== userId) {
+            if (board?.ownerId !== userId) {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,
@@ -123,7 +123,7 @@ export class ListService {
                 select: { id: true, ownerId: true },
             })
 
-            if (!board || board.ownerId !== userId) {
+            if (board?.ownerId !== userId) {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,
@@ -169,7 +169,7 @@ export class ListService {
                 select: { id: true, ownerId: true },
             })
 
-            if (!board || board.ownerId !== userId) {
+            if (board?.ownerId !== userId) {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,

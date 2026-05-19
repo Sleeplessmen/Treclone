@@ -127,22 +127,20 @@ export class CardRepository {
 
     async moveCard(
         cardId: bigint,
-        data: {
-            listId: bigint
-            position: number
-        }
+        listId: bigint,
+        position: number
     ) {
         return prisma.card.update({
             where: { id: cardId },
-            data,
+            data: {
+                listId,
+                position,
+            },
             select: {
                 id: true,
                 title: true,
-                description: true,
                 position: true,
                 listId: true,
-                assigneeUserId: true,
-                createdBy: true,
                 createdAt: true,
                 updatedAt: true,
             },
