@@ -13,10 +13,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Edit2 } from 'lucide-react';
+import { Edit2, AlertCircle } from 'lucide-react';
 import { EditProfileModal } from './_components/edit-profile-modal';
+import ProfileLoading from './loading';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -30,32 +30,67 @@ export default function ProfilePage() {
     }
   }, [authLoading, user, router]);
 
+  // Show loading state
   if (authLoading || profileLoading) {
+    return <ProfileLoading />;
+  }
+
+  // Show error state for missing auth
+  if (!user) {
     return (
-      <main className="max-w-4xl mx-auto space-y-gap-lg">
-        <Card>
-          <CardHeader>
-            <div className="flex gap-gap-lg">
-              <Skeleton className="w-20 h-20 rounded-md" />
-              <div className="flex-1 space-y-gap-sm">
-                <Skeleton className="h-6 w-40" />
-                <Skeleton className="h-4 w-60" />
-              </div>
-            </div>
-          </CardHeader>
-        </Card>
+      <main className="max-w-4xl mx-auto space-y-gap-lg px-gap-md py-gap-lg">
+        <div className="flex items-center gap-gap-md p-gap-md bg-red-50 border border-red-200 rounded-lg">
+          <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0" />
+          <div className="flex-1">
+            <h2 className="text-body-bold text-red-900">
+              Authentication Required
+            </h2>
+            <p className="text-body text-red-700 mt-gap-sm">
+              You must be logged in to view your profile
+            </p>
+          </div>
+          <Button
+            onClick={() => router.push('/login')}
+            size="sm"
+            variant="default"
+          >
+            Go to Login
+          </Button>
+        </div>
       </main>
     );
   }
 
-  if (!user || !profileData?.data) {
-    return null;
+  // Show error state for missing profile data
+  if (!profileData?.user) {
+    return (
+      <main className="max-w-4xl mx-auto space-y-gap-lg px-gap-md py-gap-lg">
+        <div className="flex items-center gap-gap-md p-gap-md bg-red-50 border border-red-200 rounded-lg">
+          <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0" />
+          <div className="flex-1">
+            <h2 className="text-body-bold text-red-900">
+              Failed to load profile
+            </h2>
+            <p className="text-body text-red-700 mt-gap-sm">
+              Unable to fetch your profile data. Please try again.
+            </p>
+          </div>
+          <Button
+            onClick={() => window.location.reload()}
+            size="sm"
+            variant="default"
+          >
+            Retry
+          </Button>
+        </div>
+      </main>
+    );
   }
 
-  const profile = profileData.data;
+  const profile = profileData.user;
 
   return (
-    <main className="max-w-4xl mx-auto space-y-gap-lg">
+    <main className="max-w-4xl mx-auto space-y-gap-lg px-gap-md py-gap-lg">
       {/* Profile Header */}
       <Card>
         <CardHeader>

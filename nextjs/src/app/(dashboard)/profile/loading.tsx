@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 export default function ProfileLoading() {
   return (
-    <main className="max-w-4xl mx-auto space-y-gap-lg">
+    <main className="max-w-4xl mx-auto space-y-gap-lg px-gap-md py-gap-lg">
       {/* Profile Header Skeleton */}
       <Card>
         <CardHeader>
