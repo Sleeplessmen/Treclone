@@ -139,7 +139,7 @@ export class WorkspaceMemberService {
             // Verify member exists and belongs to workspace
             const member = await this.repository.getMemberById(validatedData.memberId)
 
-            if (!member || member.workspaceId !== workspaceId) {
+            if (member?.workspaceId !== workspaceId) {
                 throw new AuthError(
                     'Member not found in this workspace',
                     404,

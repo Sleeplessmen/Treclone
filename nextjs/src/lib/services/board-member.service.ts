@@ -127,7 +127,7 @@ export class BoardMemberService {
             // Verify member exists and belongs to board
             const member = await this.repository.getMemberById(validatedData.memberId)
 
-            if (!member || member.boardId !== boardId) {
+            if (member?.boardId !== boardId) {
                 throw new AuthError(
                     'Member not found in this board',
                     404,
