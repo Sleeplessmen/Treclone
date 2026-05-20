@@ -1,5 +1,3 @@
-import storybook from 'eslint-plugin-storybook';
-
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { FlatCompat } from '@eslint/eslintrc';
