@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus, Settings, Trash2, Users } from 'lucide-react';
+import { Label } from '@/components/ui/label';
 
 interface Workspace {
   id: string;
@@ -154,10 +155,10 @@ export default function WorkspacesPage() {
 function CreateWorkspaceModal({
   onClose,
   onCreate,
-}: {
+}: Readonly<{
   onClose: () => void;
   onCreate: (data: { name: string; description: string }) => void;
-}) {
+}>) {
   const [formData, setFormData] = useState({ name: '', description: '' });
 
   return (
@@ -171,9 +172,9 @@ function CreateWorkspaceModal({
 
         <div className="p-gap-lg space-y-gap-md">
           <div className="space-y-gap-sm">
-            <label className="text-label-sm font-medium text-ink">
+            <Label className="text-label-sm font-medium text-ink">
               Workspace Name
-            </label>
+            </Label>
             <input
               type="text"
               placeholder="e.g., Design Team"
@@ -186,9 +187,9 @@ function CreateWorkspaceModal({
           </div>
 
           <div className="space-y-gap-sm">
-            <label className="text-label-sm font-medium text-ink">
+            <Label className="text-label-sm font-medium text-ink">
               Description
-            </label>
+            </Label>
             <textarea
               placeholder="What's this workspace for?"
               className="w-full px-gap-md py-gap-sm border border-hairline-ghost rounded-sm bg-surface-2 text-body"

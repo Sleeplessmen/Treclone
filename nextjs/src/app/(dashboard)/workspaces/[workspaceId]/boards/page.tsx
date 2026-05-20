@@ -6,17 +6,17 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Plus, Trash2 } from 'lucide-react';
 
 interface Board {
-  id: string;
-  title: string;
-  description: string;
-  lists: number;
-  cards: number;
+  readonly id: string;
+  readonly title: string;
+  readonly description: string;
+  readonly lists: number;
+  readonly cards: number;
 }
 
 export default function BoardsPage({
-  params,
+  readonly params,
 }: {
-  params: Promise<{ workspaceId: string }>;
+  readonly params: Promise<{ workspaceId: string }>;
 }) {
   const [boards, setBoards] = useState<Board[]>([]);
 
