@@ -1,6 +1,19 @@
 import '@testing-library/jest-dom'
 import { afterEach, vi, afterAll, beforeAll } from 'vitest'
 import { cleanup } from '@testing-library/react'
+import { QueryClient } from '@tanstack/react-query'
+
+declare global {
+    var queryClient: QueryClient
+}
+
+globalThis.queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            retry: false,
+        },
+    },
+})
 
 // Cleanup after each test
 afterEach(() => {
