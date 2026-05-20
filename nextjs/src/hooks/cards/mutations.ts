@@ -2,42 +2,49 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-interface CreateCardInput {
-    title: string
-    description?: string
-    position: number
-    listId: string
-}
-
-interface UpdateCardInput {
-    title?: string
-    description?: string
-    assigneeUserId?: string
-}
-
 interface CardResponse {
     success: boolean
-    message: string
-    card?: {
+    data: {
         id: string
         title: string
         description?: string
-        position: number
-        assigneeUserId?: string
-        createdBy: string
+        assigneeId?: string
+        position?: number
+        listId: string
         createdAt: string
         updatedAt: string
     }
 }
 
+interface CreateCardInput {
+    title: string
+    description?: string
+    assigneeId?: string
+}
+
+interface UpdateCardInput {
+    title?: string
+    description?: string
+    assigneeId?: string
+}
+
+interface MoveCardInput {
+    targetListId: string
+    position?: number
+}
+
 // Create card
-export function useCreateCard(listId: string) {
+export function useCreateCard(
+    workspaceId: string,
+    boardId: string,
+    listId: string
+) {
     const queryClient = useQueryClient()
 
-    return useMutation<CardResponse, Error, Omit<CreateCardInput, 'listId'>>({
+    return useMutation<CardResponse, Error, CreateCardInput>({
         mutationFn: async (data) => {
             const response = await fetch(
-                `/api/workspaces/[workspaceId]/boards/[boardId]/lists/${listId}/cards`,
+                `/api/workspaces/${workspaceId}/boards/${boardId}/lists/${listId}/cards`,
                 {
                     method: 'POST',
                     headers: {
@@ -56,19 +63,29 @@ export function useCreateCard(listId: string) {
             return response.json()
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['cards', listId] })
+            queryClient.invalidateQueries({
+                queryKey: ['cards', workspaceId, boardId, listId],
+            })
+            queryClient.invalidateQueries({
+                queryKey: ['all-board-cards', workspaceId, boardId],
+            })
         },
     })
 }
 
 // Update card
-export function useUpdateCard(cardId: string) {
+export function useUpdateCard(
+    workspaceId: string,
+    boardId: string,
+    listId: string,
+    cardId: string
+) {
     const queryClient = useQueryClient()
 
     return useMutation<CardResponse, Error, UpdateCardInput>({
         mutationFn: async (data) => {
             const response = await fetch(
-                `/api/workspaces/[workspaceId]/boards/[boardId]/cards/${cardId}`,
+                `/api/workspaces/${workspaceId}/boards/${boardId}/lists/${listId}/cards/${cardId}`,
                 {
                     method: 'PATCH',
                     headers: {
@@ -87,19 +104,32 @@ export function useUpdateCard(cardId: string) {
             return response.json()
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['card', cardId] })
+            queryClient.invalidateQueries({
+                queryKey: ['cards', workspaceId, boardId, listId],
+            })
+            queryClient.invalidateQueries({
+                queryKey: ['card', workspaceId, boardId, listId, cardId],
+            })
+            queryClient.invalidateQueries({
+                queryKey: ['all-board-cards', workspaceId, boardId],
+            })
         },
     })
 }
 
 // Delete card
-export function useDeleteCard(cardId: string) {
+export function useDeleteCard(
+    workspaceId: string,
+    boardId: string,
+    listId: string,
+    cardId: string
+) {
     const queryClient = useQueryClient()
 
-    return useMutation<CardResponse, Error>({
+    return useMutation({
         mutationFn: async () => {
             const response = await fetch(
-                `/api/workspaces/[workspaceId]/boards/[boardId]/cards/${cardId}`,
+                `/api/workspaces/${workspaceId}/boards/${boardId}/lists/${listId}/cards/${cardId}`,
                 {
                     method: 'DELETE',
                     headers: {
@@ -117,7 +147,93 @@ export function useDeleteCard(cardId: string) {
             return response.json()
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['cards'] })
+            queryClient.invalidateQueries({
+                queryKey: ['cards', workspaceId, boardId, listId],
+            })
+            queryClient.invalidateQueries({
+                queryKey: ['all-board-cards', workspaceId, boardId],
+            })
+        },
+    })
+}
+
+// Move card to different list
+export function useMoveCard(
+    workspaceId: string,
+    boardId: string,
+    listId: string,
+    cardId: string
+) {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: async (data: MoveCardInput) => {
+            const response = await fetch(
+                `/api/workspaces/${workspaceId}/boards/${boardId}/lists/${listId}/cards/${cardId}/move`,
+                {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(data),
+                }
+            )
+
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(error.message || 'Failed to move card')
+            }
+
+            return response.json()
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ['cards', workspaceId, boardId, listId],
+            })
+            queryClient.invalidateQueries({
+                queryKey: ['all-board-cards', workspaceId, boardId],
+            })
+        },
+    })
+}
+
+// Duplicate card
+export function useDuplicateCard(
+    workspaceId: string,
+    boardId: string,
+    listId: string,
+    cardId: string
+) {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: async () => {
+            const response = await fetch(
+                `/api/workspaces/${workspaceId}/boards/${boardId}/lists/${listId}/cards/${cardId}/duplicate`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                }
+            )
+
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(error.message || 'Failed to duplicate card')
+            }
+
+            return response.json()
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ['cards', workspaceId, boardId, listId],
+            })
+            queryClient.invalidateQueries({
+                queryKey: ['all-board-cards', workspaceId, boardId],
+            })
         },
     })
 }

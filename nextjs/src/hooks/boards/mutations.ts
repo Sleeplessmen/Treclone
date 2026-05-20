@@ -2,6 +2,18 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
+interface BoardResponse {
+    success: boolean
+    data: {
+        id: string
+        title: string
+        description?: string
+        workspaceId: string
+        createdAt: string
+        updatedAt: string
+    }
+}
+
 interface CreateBoardInput {
     title: string
     description?: string
@@ -10,20 +22,6 @@ interface CreateBoardInput {
 interface UpdateBoardInput {
     title?: string
     description?: string
-}
-
-interface BoardResponse {
-    success: boolean
-    message: string
-    board?: {
-        id: string
-        title: string
-        description?: string
-        ownerId: string
-        workspaceId: string
-        createdAt: string
-        updatedAt: string
-    }
 }
 
 // Create board
@@ -58,19 +56,22 @@ export function useCreateBoard(workspaceId: string) {
 }
 
 // Update board
-export function useUpdateBoard(boardId: string) {
+export function useUpdateBoard(workspaceId: string, boardId: string) {
     const queryClient = useQueryClient()
 
     return useMutation<BoardResponse, Error, UpdateBoardInput>({
         mutationFn: async (data) => {
-            const response = await fetch(`/api/workspaces/[workspaceId]/boards/${boardId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify(data),
-            })
+            const response = await fetch(
+                `/api/workspaces/${workspaceId}/boards/${boardId}`,
+                {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(data),
+                }
+            )
 
             if (!response.ok) {
                 const error = await response.json()
@@ -80,7 +81,8 @@ export function useUpdateBoard(boardId: string) {
             return response.json()
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['board', boardId] })
+            queryClient.invalidateQueries({ queryKey: ['board', workspaceId, boardId] })
+            queryClient.invalidateQueries({ queryKey: ['boards', workspaceId] })
         },
     })
 }
@@ -89,7 +91,7 @@ export function useUpdateBoard(boardId: string) {
 export function useDeleteBoard(workspaceId: string, boardId: string) {
     const queryClient = useQueryClient()
 
-    return useMutation<BoardResponse, Error>({
+    return useMutation({
         mutationFn: async () => {
             const response = await fetch(
                 `/api/workspaces/${workspaceId}/boards/${boardId}`,
@@ -111,7 +113,6 @@ export function useDeleteBoard(workspaceId: string, boardId: string) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['boards', workspaceId] })
-            queryClient.removeQueries({ queryKey: ['board', boardId] })
         },
     })
 }

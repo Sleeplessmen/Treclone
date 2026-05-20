@@ -2,6 +2,42 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
+interface WorkspaceResponse {
+    success: boolean
+    data: {
+        id: string
+        name: string
+        description?: string
+        ownerId: string
+        createdAt: string
+        updatedAt: string
+    }
+}
+
+interface WorkspaceMemberResponse {
+    success: boolean
+    data: {
+        id: string
+        userId: string
+        workspaceId: string
+        role: 'owner' | 'admin' | 'member'
+        createdAt: string
+        updatedAt: string
+    }
+}
+
+interface WorkspaceSettingsResponse {
+    success: boolean
+    data: {
+        id: string
+        workspaceId: string
+        defaultRole: string
+        allowPublicBoards: boolean
+        createdAt: string
+        updatedAt: string
+    }
+}
+
 interface CreateWorkspaceInput {
     name: string
     description?: string
@@ -12,37 +48,18 @@ interface UpdateWorkspaceInput {
     description?: string
 }
 
+interface AddWorkspaceMemberInput {
+    userId: string
+    role?: 'admin' | 'member'
+}
+
+interface UpdateWorkspaceMemberInput {
+    role: 'owner' | 'admin' | 'member'
+}
+
 interface UpdateWorkspaceSettingsInput {
-    visibility?: 'private' | 'team' | 'public'
-    notifications?: {
-        dailySummary?: boolean
-        mentionAlerts?: boolean
-    }
-}
-
-interface WorkspaceResponse {
-    success: boolean
-    message: string
-    workspace?: {
-        id: string
-        name: string
-        description?: string
-        ownerId: string
-        createdAt: string
-        updatedAt: string
-    }
-}
-
-interface WorkspaceSettingsResponse {
-    success: boolean
-    message: string
-    settings?: {
-        visibility: string
-        notifications: {
-            dailySummary: boolean
-            mentionAlerts: boolean
-        }
-    }
+    defaultRole?: string
+    allowPublicBoards?: boolean
 }
 
 // Create workspace
@@ -80,7 +97,7 @@ export function useUpdateWorkspace(workspaceId: string) {
     return useMutation<WorkspaceResponse, Error, UpdateWorkspaceInput>({
         mutationFn: async (data) => {
             const response = await fetch(`/api/workspaces/${workspaceId}`, {
-                method: 'PUT',
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -96,8 +113,8 @@ export function useUpdateWorkspace(workspaceId: string) {
             return response.json()
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['workspaces'] })
             queryClient.invalidateQueries({ queryKey: ['workspace', workspaceId] })
+            queryClient.invalidateQueries({ queryKey: ['workspaces'] })
         },
     })
 }
@@ -106,7 +123,7 @@ export function useUpdateWorkspace(workspaceId: string) {
 export function useDeleteWorkspace(workspaceId: string) {
     const queryClient = useQueryClient()
 
-    return useMutation<WorkspaceResponse, Error>({
+    return useMutation({
         mutationFn: async () => {
             const response = await fetch(`/api/workspaces/${workspaceId}`, {
                 method: 'DELETE',
@@ -125,7 +142,125 @@ export function useDeleteWorkspace(workspaceId: string) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['workspaces'] })
-            queryClient.removeQueries({ queryKey: ['workspace', workspaceId] })
+        },
+    })
+}
+
+// Add workspace member
+export function useAddWorkspaceMember(workspaceId: string) {
+    const queryClient = useQueryClient()
+
+    return useMutation<
+        WorkspaceMemberResponse,
+        Error,
+        AddWorkspaceMemberInput
+    >({
+        mutationFn: async (data) => {
+            const response = await fetch(
+                `/api/workspaces/${workspaceId}/members`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(data),
+                }
+            )
+
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(error.message || 'Failed to add workspace member')
+            }
+
+            return response.json()
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ['workspace-members', workspaceId],
+            })
+        },
+    })
+}
+
+// Update workspace member
+export function useUpdateWorkspaceMember(
+    workspaceId: string,
+    memberId: string
+) {
+    const queryClient = useQueryClient()
+
+    return useMutation<
+        WorkspaceMemberResponse,
+        Error,
+        UpdateWorkspaceMemberInput
+    >({
+        mutationFn: async (data) => {
+            const response = await fetch(
+                `/api/workspaces/${workspaceId}/members/${memberId}`,
+                {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(data),
+                }
+            )
+
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(
+                    error.message || 'Failed to update workspace member'
+                )
+            }
+
+            return response.json()
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ['workspace-members', workspaceId],
+            })
+            queryClient.invalidateQueries({
+                queryKey: ['workspace-member', workspaceId, memberId],
+            })
+        },
+    })
+}
+
+// Remove workspace member
+export function useRemoveWorkspaceMember(
+    workspaceId: string,
+    memberId: string
+) {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: async () => {
+            const response = await fetch(
+                `/api/workspaces/${workspaceId}/members/${memberId}`,
+                {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                }
+            )
+
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(
+                    error.message || 'Failed to remove workspace member'
+                )
+            }
+
+            return response.json()
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ['workspace-members', workspaceId],
+            })
         },
     })
 }
@@ -143,7 +278,7 @@ export function useUpdateWorkspaceSettings(workspaceId: string) {
             const response = await fetch(
                 `/api/workspaces/${workspaceId}/settings`,
                 {
-                    method: 'PUT',
+                    method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -154,14 +289,50 @@ export function useUpdateWorkspaceSettings(workspaceId: string) {
 
             if (!response.ok) {
                 const error = await response.json()
-                throw new Error(error.message || 'Failed to update workspace settings')
+                throw new Error(
+                    error.message || 'Failed to update workspace settings'
+                )
             }
 
             return response.json()
         },
         onSuccess: () => {
             queryClient.invalidateQueries({
-                queryKey: ['workspaceSettings', workspaceId],
+                queryKey: ['workspace-settings', workspaceId],
+            })
+        },
+    })
+}
+
+// Delete workspace settings
+export function useDeleteWorkspaceSettings(workspaceId: string) {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: async () => {
+            const response = await fetch(
+                `/api/workspaces/${workspaceId}/settings`,
+                {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                }
+            )
+
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(
+                    error.message || 'Failed to delete workspace settings'
+                )
+            }
+
+            return response.json()
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ['workspace-settings', workspaceId],
             })
         },
     })

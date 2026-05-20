@@ -2,32 +2,32 @@
 
 import { useQuery } from '@tanstack/react-query'
 
-interface Board {
+interface List {
     id: string
     title: string
-    description?: string
-    workspaceId: string
+    position: number
+    boardId: string
     createdAt: string
     updatedAt: string
 }
 
-interface FetchBoardResponse {
+interface FetchListsResponse {
     success: boolean
-    data: Board
+    data: List[]
 }
 
-interface FetchBoardsResponse {
+interface FetchListResponse {
     success: boolean
-    data: Board[]
+    data: List
 }
 
-// Fetch all boards in a workspace
-export function useBoards(workspaceId: string) {
-    return useQuery<FetchBoardsResponse, Error>({
-        queryKey: ['boards', workspaceId],
+// Fetch all lists in a board
+export function useLists(workspaceId: string, boardId: string) {
+    return useQuery<FetchListsResponse, Error>({
+        queryKey: ['lists', workspaceId, boardId],
         queryFn: async () => {
             const response = await fetch(
-                `/api/workspaces/${workspaceId}/boards`,
+                `/api/workspaces/${workspaceId}/boards/${boardId}/lists`,
                 {
                     method: 'GET',
                     headers: {
@@ -39,38 +39,42 @@ export function useBoards(workspaceId: string) {
 
             if (!response.ok) {
                 const error = await response.json()
-                throw new Error(error.message || 'Failed to fetch boards')
-            }
-
-            return response.json()
-        },
-        enabled: !!workspaceId,
-    })
-}
-
-// Fetch single board
-export function useBoard(workspaceId: string, boardId: string) {
-    return useQuery<FetchBoardResponse, Error>({
-        queryKey: ['board', workspaceId, boardId],
-        queryFn: async () => {
-            const response = await fetch(
-                `/api/workspaces/${workspaceId}/boards/${boardId}`,
-                {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                }
-            )
-
-            if (!response.ok) {
-                const error = await response.json()
-                throw new Error(error.message || 'Failed to fetch board')
+                throw new Error(error.message || 'Failed to fetch lists')
             }
 
             return response.json()
         },
         enabled: !!workspaceId && !!boardId,
+    })
+}
+
+// Fetch single list (if needed)
+export function useList(
+    workspaceId: string,
+    boardId: string,
+    listId: string
+) {
+    return useQuery<FetchListResponse, Error>({
+        queryKey: ['list', workspaceId, boardId, listId],
+        queryFn: async () => {
+            const response = await fetch(
+                `/api/workspaces/${workspaceId}/boards/${boardId}/lists/${listId}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                }
+            )
+
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(error.message || 'Failed to fetch list')
+            }
+
+            return response.json()
+        },
+        enabled: !!workspaceId && !!boardId && !!listId,
     })
 }

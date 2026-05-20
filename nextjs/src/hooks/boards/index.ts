@@ -1,2 +1,2 @@
-export { useBoards, useBoard } from './queries'
-export { useCreateBoard, useUpdateBoard, useDeleteBoard } from './mutations'
+export * from './queries'
+export * from './mutations'

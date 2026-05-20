@@ -1,2 +1,2 @@
-export { useProfile } from './queries'
-export { useUpdateProfile } from './mutations'
+export * from './queries'
+export * from './mutations'
