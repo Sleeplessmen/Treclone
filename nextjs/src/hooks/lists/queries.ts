@@ -13,12 +13,18 @@ interface List {
 
 interface FetchListsResponse {
     success: boolean
-    data: List[]
+    data: {
+        message: string
+        lists: List[]
+    }
 }
 
 interface FetchListResponse {
     success: boolean
-    data: List
+    data: {
+        message: string
+        list: List
+    }
 }
 
 // Fetch all lists in a board

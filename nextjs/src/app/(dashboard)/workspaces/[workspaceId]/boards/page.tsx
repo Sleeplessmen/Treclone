@@ -13,11 +13,7 @@ interface Board {
   readonly cards: number;
 }
 
-export default function BoardsPage({
-  readonly params,
-}: {
-  readonly params: Promise<{ workspaceId: string }>;
-}) {
+export default function BoardsPage() {
   const [boards, setBoards] = useState<Board[]>([]);
 
   useEffect(() => {

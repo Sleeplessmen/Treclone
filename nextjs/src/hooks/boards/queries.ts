@@ -18,12 +18,15 @@ interface FetchBoardResponse {
 
 interface FetchBoardsResponse {
     success: boolean
-    data: Board[]
+    data: {
+        message: string
+        boards: Board[]
+    }
 }
 
 // Fetch all boards in a workspace
 export function useBoards(workspaceId: string) {
-    return useQuery<FetchBoardsResponse, Error>({
+    return useQuery<FetchBoardsResponse['data'], Error>({
         queryKey: ['boards', workspaceId],
         queryFn: async () => {
             const response = await fetch(
@@ -42,7 +45,8 @@ export function useBoards(workspaceId: string) {
                 throw new Error(error.message || 'Failed to fetch boards')
             }
 
-            return response.json()
+            const json = await response.json()
+            return json.data
         },
         enabled: !!workspaceId,
     })
@@ -50,7 +54,7 @@ export function useBoards(workspaceId: string) {
 
 // Fetch single board
 export function useBoard(workspaceId: string, boardId: string) {
-    return useQuery<FetchBoardResponse, Error>({
+    return useQuery<FetchBoardResponse['data'], Error>({
         queryKey: ['board', workspaceId, boardId],
         queryFn: async () => {
             const response = await fetch(
@@ -69,7 +73,8 @@ export function useBoard(workspaceId: string, boardId: string) {
                 throw new Error(error.message || 'Failed to fetch board')
             }
 
-            return response.json()
+            const json = await response.json()
+            return json.data
         },
         enabled: !!workspaceId && !!boardId,
     })

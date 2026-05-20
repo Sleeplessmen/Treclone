@@ -12,13 +12,15 @@ interface User {
 
 interface FetchUserResponse {
     success: boolean
-    data: User
-    message: string
+    data: {
+        message: string
+        user: User
+    }
 }
 
 // Fetch current user profile
 export function useProfile() {
-    return useQuery<FetchUserResponse, Error>({
+    return useQuery<FetchUserResponse['data'], Error>({
         queryKey: ['profile'],
         queryFn: async () => {
             const response = await fetch('/api/profile', {
@@ -34,7 +36,8 @@ export function useProfile() {
                 throw new Error(error.message || 'Failed to fetch profile')
             }
 
-            return response.json()
+            const json = await response.json()
+            return json.data
         },
     })
 }

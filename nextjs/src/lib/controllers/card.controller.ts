@@ -35,8 +35,7 @@ export class CardController {
                     {
                         message: 'Card created successfully',
                         card: convertBigIntToString(card),
-                    },
-                    201
+                    }
                 ),
                 { status: 201 }
             )

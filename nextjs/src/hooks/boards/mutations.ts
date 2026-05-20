@@ -47,7 +47,8 @@ export function useCreateBoard(workspaceId: string) {
                 throw new Error(error.message || 'Failed to create board')
             }
 
-            return response.json()
+            const json = await response.json()
+            return json.data
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['boards', workspaceId] })
@@ -78,7 +79,8 @@ export function useUpdateBoard(workspaceId: string, boardId: string) {
                 throw new Error(error.message || 'Failed to update board')
             }
 
-            return response.json()
+            const json = await response.json()
+            return json.data
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['board', workspaceId, boardId] })
@@ -109,7 +111,8 @@ export function useDeleteBoard(workspaceId: string, boardId: string) {
                 throw new Error(error.message || 'Failed to delete board')
             }
 
-            return response.json()
+            const json = await response.json()
+            return json.data
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['boards', workspaceId] })

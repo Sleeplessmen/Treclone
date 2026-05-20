@@ -103,10 +103,20 @@ export class CardService {
 
             const validatedData = createCardSchema.parse(credentials)
 
+            let position = validatedData.position
+            if (position === undefined) {
+                const lastCard = await prisma.card.findFirst({
+                    where: { listId },
+                    orderBy: { position: 'desc' },
+                    select: { position: true },
+                })
+                position = (lastCard?.position ?? -1) + 1
+            }
+
             const card = await this.repository.createCard(listId, userId, {
                 title: validatedData.title,
                 description: validatedData.description,
-                position: validatedData.position,
+                position,
                 assigneeUserId: validatedData.assigneeUserId,
             })
 

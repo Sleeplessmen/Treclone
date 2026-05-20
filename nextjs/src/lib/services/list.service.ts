@@ -93,9 +93,20 @@ export class ListService {
 
             const validatedData = createListSchema.parse(credentials)
 
+            // If position not provided, calculate it based on existing lists
+            let position = validatedData.position
+            if (position === undefined) {
+                const lastList = await prisma.list.findFirst({
+                    where: { boardId },
+                    orderBy: { position: 'desc' },
+                    select: { position: true }
+                })
+                position = (lastList?.position ?? -1) + 1
+            }
+
             const list = await this.repository.createList(boardId, {
                 title: validatedData.title,
-                position: validatedData.position,
+                position,
             })
 
             return list

@@ -36,7 +36,10 @@ interface Workspace {
 
 interface FetchWorkspacesResponse {
     success: boolean
-    data: Workspace[]
+    data: {
+        message: string
+        workspaces: Workspace[]
+    }
 }
 
 interface FetchWorkspaceResponse {
@@ -61,7 +64,7 @@ interface FetchWorkspaceSettingsResponse {
 
 // Fetch all workspaces for user
 export function useWorkspaces() {
-    return useQuery<FetchWorkspacesResponse, Error>({
+    return useQuery<FetchWorkspacesResponse['data'], Error>({
         queryKey: ['workspaces'],
         queryFn: async () => {
             const response = await fetch('/api/workspaces', {
@@ -77,14 +80,15 @@ export function useWorkspaces() {
                 throw new Error(error.message || 'Failed to fetch workspaces')
             }
 
-            return response.json()
+            const json = await response.json()
+            return json.data
         },
     })
 }
 
 // Fetch single workspace
 export function useWorkspace(workspaceId: string) {
-    return useQuery<FetchWorkspaceResponse, Error>({
+    return useQuery<FetchWorkspaceResponse['data'], Error>({
         queryKey: ['workspace', workspaceId],
         queryFn: async () => {
             const response = await fetch(`/api/workspaces/${workspaceId}`, {
@@ -100,7 +104,8 @@ export function useWorkspace(workspaceId: string) {
                 throw new Error(error.message || 'Failed to fetch workspace')
             }
 
-            return response.json()
+            const json = await response.json()
+            return json.data
         },
         enabled: !!workspaceId,
     })

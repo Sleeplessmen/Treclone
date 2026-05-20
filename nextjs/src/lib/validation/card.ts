@@ -3,7 +3,7 @@ import { z } from 'zod'
 export const createCardSchema = z.object({
     title: z.string().min(1, 'Card title is required').max(255),
     description: z.string().max(1000).optional(),
-    position: z.number().int().min(0),
+    position: z.number().int().min(0).optional(),
     assigneeUserId: z.bigint().optional(),
 })
 

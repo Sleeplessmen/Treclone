@@ -5,14 +5,17 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 interface CardResponse {
     success: boolean
     data: {
-        id: string
-        title: string
-        description?: string
-        assigneeId?: string
-        position?: number
-        listId: string
-        createdAt: string
-        updatedAt: string
+        message: string
+        card: {
+            id: string
+            title: string
+            description?: string
+            assigneeUserId?: string
+            position: number
+            listId: string
+            createdAt: string
+            updatedAt: string
+        }
     }
 }
 
@@ -29,8 +32,8 @@ interface UpdateCardInput {
 }
 
 interface MoveCardInput {
-    targetListId: string
-    position?: number
+    listId: string
+    position: number
 }
 
 // Create card
