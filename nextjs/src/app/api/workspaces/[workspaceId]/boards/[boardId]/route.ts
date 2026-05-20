@@ -7,42 +7,42 @@ const controller = new BoardController()
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { boardId: string } }
+    { params }: { params: Promise<{ boardId: string }> }
 ) {
+    const { boardId } = await params
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
         return errorResponse('Unauthorized', 401)
     }
 
-    const boardId = BigInt(params.boardId)
-    return controller.getBoard(request, boardId, userId)
+    return controller.getBoard(request, BigInt(boardId), userId)
 }
 
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { boardId: string } }
+    { params }: { params: Promise<{ boardId: string }> }
 ) {
+    const { boardId } = await params
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
         return errorResponse('Unauthorized', 401)
     }
 
-    const boardId = BigInt(params.boardId)
-    return controller.updateBoard(request, boardId, userId)
+    return controller.updateBoard(request, BigInt(boardId), userId)
 }
 
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { boardId: string } }
+    { params }: { params: Promise<{ boardId: string }> }
 ) {
+    const { boardId } = await params
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
         return errorResponse('Unauthorized', 401)
     }
 
-    const boardId = BigInt(params.boardId)
-    return controller.deleteBoard(request, boardId, userId)
+    return controller.deleteBoard(request, BigInt(boardId), userId)
 }

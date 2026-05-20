@@ -7,28 +7,28 @@ const controller = new BoardController()
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { workspaceId: string } }
+    { params }: { params: Promise<{ workspaceId: string }> }
 ) {
+    const { workspaceId } = await params
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
         return errorResponse('Unauthorized', 401)
     }
 
-    const workspaceId = BigInt(params.workspaceId)
-    return controller.getBoards(request, workspaceId, userId)
+    return controller.getBoards(request, BigInt(workspaceId), userId)
 }
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { workspaceId: string } }
+    { params }: { params: Promise<{ workspaceId: string }> }
 ) {
+    const { workspaceId } = await params
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
         return errorResponse('Unauthorized', 401)
     }
 
-    const workspaceId = BigInt(params.workspaceId)
-    return controller.createBoard(request, workspaceId, userId)
+    return controller.createBoard(request, BigInt(workspaceId), userId)
 }

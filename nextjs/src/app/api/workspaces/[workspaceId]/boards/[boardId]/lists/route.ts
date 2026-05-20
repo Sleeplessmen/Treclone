@@ -7,28 +7,28 @@ const controller = new ListController()
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { boardId: string } }
+    { params }: { params: Promise<{ boardId: string }> }
 ) {
+    const { boardId } = await params
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
         return errorResponse('Unauthorized', 401)
     }
 
-    const boardId = BigInt(params.boardId)
-    return controller.getLists(request, boardId, userId)
+    return controller.getLists(request, BigInt(boardId), userId)
 }
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { boardId: string } }
+    { params }: { params: Promise<{ boardId: string }> }
 ) {
+    const { boardId } = await params
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
         return errorResponse('Unauthorized', 401)
     }
 
-    const boardId = BigInt(params.boardId)
-    return controller.createList(request, boardId, userId)
+    return controller.createList(request, BigInt(boardId), userId)
 }

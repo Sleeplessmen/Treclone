@@ -1,48 +1,48 @@
 import { NextRequest } from 'next/server'
-import { WorkspaceMemberController } from '@/lib/controllers/workspace-member.controller'
+import { BoardMemberController } from '@/lib/controllers/board-member.controller'
 import { verifyTokenFromCookie } from '@/lib/auth-utils'
 import { errorResponse } from '@/lib/api-utils'
 
-const controller = new WorkspaceMemberController()
+const controller = new BoardMemberController()
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: Promise<{ workspaceId: string }> }
+    { params }: { params: Promise<{ boardId: string }> }
 ) {
-    const { workspaceId } = await params
+    const { boardId } = await params
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
         return errorResponse('Unauthorized', 401)
     }
 
-    return controller.getMembers(request, BigInt(workspaceId), userId)
+    return controller.getMembers(request, BigInt(boardId), userId)
 }
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: Promise<{ workspaceId: string }> }
+    { params }: { params: Promise<{ boardId: string }> }
 ) {
-    const { workspaceId } = await params
+    const { boardId } = await params
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
         return errorResponse('Unauthorized', 401)
     }
 
-    return controller.addMember(request, BigInt(workspaceId), userId)
+    return controller.addMember(request, BigInt(boardId), userId)
 }
 
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: Promise<{ workspaceId: string }> }
+    { params }: { params: Promise<{ boardId: string }> }
 ) {
-    const { workspaceId } = await params
+    const { boardId } = await params
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
         return errorResponse('Unauthorized', 401)
     }
 
-    return controller.removeMember(request, BigInt(workspaceId), userId)
+    return controller.removeMember(request, BigInt(boardId), userId)
 }

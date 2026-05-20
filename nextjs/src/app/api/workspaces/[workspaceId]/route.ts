@@ -7,42 +7,42 @@ const controller = new WorkspaceController()
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { workspaceId: string } }
+    { params }: { params: Promise<{ workspaceId: string }> }
 ) {
+    const { workspaceId } = await params
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
         return errorResponse('Unauthorized', 401)
     }
 
-    const workspaceId = BigInt(params.workspaceId)
-    return controller.getWorkspace(request, workspaceId, userId)
+    return controller.getWorkspace(request, BigInt(workspaceId), userId)
 }
 
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { workspaceId: string } }
+    { params }: { params: Promise<{ workspaceId: string }> }
 ) {
+    const { workspaceId } = await params
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
         return errorResponse('Unauthorized', 401)
     }
 
-    const workspaceId = BigInt(params.workspaceId)
-    return controller.updateWorkspace(request, workspaceId, userId)
+    return controller.updateWorkspace(request, BigInt(workspaceId), userId)
 }
 
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { workspaceId: string } }
+    { params }: { params: Promise<{ workspaceId: string }> }
 ) {
+    const { workspaceId } = await params
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
         return errorResponse('Unauthorized', 401)
     }
 
-    const workspaceId = BigInt(params.workspaceId)
-    return controller.deleteWorkspace(request, workspaceId, userId)
+    return controller.deleteWorkspace(request, BigInt(workspaceId), userId)
 }

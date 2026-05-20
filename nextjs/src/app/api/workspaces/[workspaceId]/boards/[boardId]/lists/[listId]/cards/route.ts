@@ -7,28 +7,28 @@ const controller = new CardController()
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { listId: string } }
+    { params }: { params: Promise<{ listId: string }> }
 ) {
+    const { listId } = await params
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
         return errorResponse('Unauthorized', 401)
     }
 
-    const listId = BigInt(params.listId)
-    return controller.getCards(request, listId, userId)
+    return controller.getCards(request, BigInt(listId), userId)
 }
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { listId: string } }
+    { params }: { params: Promise<{ listId: string }> }
 ) {
+    const { listId } = await params
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
         return errorResponse('Unauthorized', 401)
     }
 
-    const listId = BigInt(params.listId)
-    return controller.createCard(request, listId, userId)
+    return controller.createCard(request, BigInt(listId), userId)
 }
