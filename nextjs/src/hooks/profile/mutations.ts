@@ -7,50 +7,24 @@ interface UserResponse {
     data: {
         id: string
         email: string
-        name: string
-        avatar?: string
+        fullName: string
         createdAt: string
         updatedAt: string
     }
-}
-
-interface UserPreferencesResponse {
-    success: boolean
-    data: {
-        theme: 'light' | 'dark' | 'system'
-        language: string
-        timezone: string
-        notifications: {
-            email: boolean
-            push: boolean
-            inApp: boolean
-        }
-    }
+    message: string
 }
 
 interface UpdateProfileInput {
-    name?: string
-    avatar?: string
-}
-
-interface UpdateUserPreferencesInput {
-    theme?: 'light' | 'dark' | 'system'
-    language?: string
-    timezone?: string
-    notifications?: {
-        email?: boolean
-        push?: boolean
-        inApp?: boolean
-    }
+    fullName?: string
 }
 
 interface ChangePasswordInput {
     currentPassword: string
     newPassword: string
-    confirmPassword: string
+    passwordConfirmation: string
 }
 
-// Update user profile
+// Update user profile (fullName only)
 export function useUpdateProfile() {
     const queryClient = useQueryClient()
 
@@ -78,16 +52,10 @@ export function useUpdateProfile() {
     })
 }
 
-// Update user preferences/settings
-export function useUpdateUserPreferences() {
-    const queryClient = useQueryClient()
-
-    return useMutation<
-        UserPreferencesResponse,
-        Error,
-        UpdateUserPreferencesInput
-    >({
-        mutationFn: async (data) => {
+// Change password (separate endpoint)
+export function useChangePassword() {
+    return useMutation({
+        mutationFn: async (data: ChangePasswordInput) => {
             const response = await fetch('/api/settings', {
                 method: 'PATCH',
                 headers: {
@@ -99,51 +67,15 @@ export function useUpdateUserPreferences() {
 
             if (!response.ok) {
                 const error = await response.json()
-                throw new Error(
-                    error.message || 'Failed to update user preferences'
-                )
-            }
-
-            return response.json()
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['user-preferences'] })
-        },
-    })
-}
-
-// Change password
-export function useChangePassword() {
-    const queryClient = useQueryClient()
-
-    return useMutation({
-        mutationFn: async (data: ChangePasswordInput) => {
-            const response = await fetch('/api/settings', {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify({
-                    action: 'changePassword',
-                    ...data,
-                }),
-            })
-
-            if (!response.ok) {
-                const error = await response.json()
                 throw new Error(error.message || 'Failed to change password')
             }
 
             return response.json()
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['profile'] })
-        },
     })
 }
 
-// Delete account
+// Delete account (separate endpoint)
 export function useDeleteAccount() {
     const queryClient = useQueryClient()
 

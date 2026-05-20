@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/auth/use-auth';
-import { useProfile, useUpdateProfile } from '@/hooks/profile';
+import { useProfile } from '@/hooks/profile';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { Edit2 } from 'lucide-react';
 import { EditProfileModal } from './_components/edit-profile-modal';
 
@@ -21,34 +22,13 @@ export default function ProfilePage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
   const { data: profileData, isLoading: profileLoading } = useProfile();
-  const { mutate: updateProfile, isPending: isUpdating } = useUpdateProfile();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editError, setEditError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
     }
   }, [authLoading, user, router]);
-
-  const handleUpdateProfile = (data: {
-    fullName?: string;
-    password?: string;
-    passwordConfirmation?: string;
-  }) => {
-    setEditError(null);
-
-    updateProfile(data, {
-      onSuccess: () => {
-        setIsEditModalOpen(false);
-      },
-      onError: (error) => {
-        const message =
-          error instanceof Error ? error.message : 'Failed to update profile';
-        setEditError(message);
-      },
-    });
-  };
 
   if (authLoading || profileLoading) {
     return (
@@ -68,11 +48,11 @@ export default function ProfilePage() {
     );
   }
 
-  if (!user || !profileData?.user) {
+  if (!user || !profileData?.data) {
     return null;
   }
 
-  const profile = profileData.user;
+  const profile = profileData.data;
 
   return (
     <main className="max-w-4xl mx-auto space-y-gap-lg">
@@ -82,11 +62,12 @@ export default function ProfilePage() {
           <div className="flex items-start justify-between">
             <div className="flex gap-gap-lg items-start">
               {/* Avatar */}
-              <div className="w-20 h-20 bg-primary rounded-md flex items-center justify-center flex-shrink-0">
+              <div className="w-20 h-20 bg-primary rounded-md flex items-center justify-center flex-shrink-0 overflow-hidden">
                 <span className="text-4xl font-heading text-white">
                   {profile.fullName.charAt(0).toUpperCase()}
                 </span>
               </div>
+
               {/* User Info */}
               <div className="space-y-gap-sm">
                 <div>
@@ -148,8 +129,7 @@ export default function ProfilePage() {
               Account Status
             </Label>
             <div className="flex items-center gap-gap-sm">
-              <div className="w-2 h-2 bg-green-500 rounded-full" />
-              <p className="text-body text-ink-muted">Active</p>
+              <Badge variant="success">Active</Badge>
             </div>
           </div>
 
@@ -168,19 +148,23 @@ export default function ProfilePage() {
               })}
             </p>
           </div>
+
+          {/* User ID */}
+          <div>
+            <Label className="text-label-sm font-semibold text-ink mb-gap-xs">
+              User ID
+            </Label>
+            <p className="text-body text-ink-muted font-mono text-xs break-all">
+              {profile.id}
+            </p>
+          </div>
         </CardContent>
       </Card>
 
       {/* Edit Profile Modal */}
       <EditProfileModal
         isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setEditError(null);
-        }}
-        onSubmit={handleUpdateProfile}
-        isLoading={isUpdating}
-        error={editError}
+        onClose={() => setIsEditModalOpen(false)}
         user={profile}
       />
     </main>
