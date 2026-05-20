@@ -12,8 +12,8 @@ export default defineConfig({
     test: {
         globals: true,
         environment: 'jsdom',
-        setupFiles: ['./src/tests/setup.ts'],
-        include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+        setupFiles: ['./tests/setup.ts'],  // Changed from ./src/tests/setup.ts
+        include: ['tests/unit/**/*.test.ts', 'tests/unit/**/*.test.tsx'],  // Changed from src/**
         exclude: ['node_modules', 'dist'],
         testTimeout: 10000,
         hookTimeout: 10000,

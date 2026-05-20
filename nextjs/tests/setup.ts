@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom'
-import { expect, afterEach, vi, afterAll, beforeAll } from 'vitest'
+import { afterEach, vi, afterAll, beforeAll } from 'vitest'
 import { cleanup } from '@testing-library/react'
 
 // Cleanup after each test
@@ -9,7 +9,7 @@ afterEach(() => {
 })
 
 // Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(globalThis, 'matchMedia', {
     writable: true,
     value: vi.fn().mockImplementation((query) => ({
         matches: false,
@@ -24,20 +24,28 @@ Object.defineProperty(window, 'matchMedia', {
 })
 
 // Mock IntersectionObserver
-global.IntersectionObserver = class IntersectionObserver {
-    constructor() { }
-    disconnect() { }
-    observe() { }
+globalThis.IntersectionObserver = class IntersectionObserver {
+    disconnect() {
+        // Mock implementation
+    }
+
+    observe() {
+        // Mock implementation
+    }
+
     takeRecords() {
         return []
     }
-    unobserve() { }
-} as any
+
+    unobserve() {
+        // Mock implementation
+    }
+} as unknown as typeof IntersectionObserver
 
 // Suppress console errors in tests
 const originalError = console.error
 beforeAll(() => {
-    console.error = (...args: any[]) => {
+    console.error = (...args: unknown[]) => {
         if (
             typeof args[0] === 'string' &&
             args[0].includes('Warning: ReactDOM.render')
