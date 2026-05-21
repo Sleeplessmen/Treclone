@@ -9,6 +9,10 @@ interface Board {
     workspaceId: string
     createdAt: string
     updatedAt: string
+    _count?: {
+        lists?: number
+        cards?: number
+    }
 }
 
 interface FetchBoardResponse {

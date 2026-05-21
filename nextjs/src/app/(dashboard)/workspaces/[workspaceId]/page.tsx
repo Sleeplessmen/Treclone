@@ -2,9 +2,10 @@
 
 import { useParams } from 'next/navigation';
 import { useWorkspace } from '@/hooks/workspace';
-import { useBoards, useCreateBoard } from '@/hooks/boards';
+import { useBoards, useCreateBoard, useDeleteBoard } from '@/hooks/boards';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -108,13 +109,11 @@ export default function WorkspaceDetailPage() {
                       Open
                     </a>
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    className="text-destructive hover:bg-destructive/10"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  <DeleteBoardButton
+                    workspaceId={workspaceId}
+                    boardId={board.id}
+                    boardTitle={board.title}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -145,6 +144,46 @@ export default function WorkspaceDetailPage() {
         />
       )}
     </main>
+  );
+}
+
+function DeleteBoardButton({
+  workspaceId,
+  boardId,
+  boardTitle,
+}: Readonly<{
+  workspaceId: string;
+  boardId: string;
+  boardTitle: string;
+}>) {
+  const [showConfirm, setShowConfirm] = useState(false);
+  const deleteBoardMutation = useDeleteBoard(workspaceId, boardId);
+
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        className="text-destructive hover:bg-destructive/10"
+        type="button"
+        disabled={deleteBoardMutation.isPending}
+        onClick={() => setShowConfirm(true)}
+      >
+        <Trash2 className="w-4 h-4" />
+      </Button>
+      <ConfirmDialog
+        open={showConfirm}
+        title="Delete Board"
+        description={`Delete "${boardTitle}"? This will delete its lists and cards.`}
+        isLoading={deleteBoardMutation.isPending}
+        onOpenChange={setShowConfirm}
+        onConfirm={() => {
+          deleteBoardMutation.mutate(undefined, {
+            onSuccess: () => setShowConfirm(false),
+          });
+        }}
+      />
+    </>
   );
 }
 

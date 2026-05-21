@@ -52,6 +52,7 @@ export function useCreateList(workspaceId: string, boardId: string) {
             queryClient.invalidateQueries({
                 queryKey: ['lists', workspaceId, boardId],
             })
+            queryClient.invalidateQueries({ queryKey: ['boards', workspaceId] })
         },
     })
 }
@@ -128,6 +129,7 @@ export function useDeleteList(
             queryClient.invalidateQueries({
                 queryKey: ['lists', workspaceId, boardId],
             })
+            queryClient.invalidateQueries({ queryKey: ['boards', workspaceId] })
         },
     })
 }

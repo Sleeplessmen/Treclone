@@ -52,6 +52,7 @@ export function useCreateBoard(workspaceId: string) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['boards', workspaceId] })
+            queryClient.invalidateQueries({ queryKey: ['workspaces'] })
         },
     })
 }
@@ -116,6 +117,7 @@ export function useDeleteBoard(workspaceId: string, boardId: string) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['boards', workspaceId] })
+            queryClient.invalidateQueries({ queryKey: ['workspaces'] })
         },
     })
 }

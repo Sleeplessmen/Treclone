@@ -2,7 +2,9 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { DragDropContext, type DropResult } from '@hello-pangea/dnd';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLists, useCreateList } from '@/hooks/lists';
 import { Plus } from 'lucide-react';
@@ -31,8 +33,15 @@ export function KanbanBoard({
   const [showAddListModal, setShowAddListModal] = useState(false);
   const [showAddCardModal, setShowAddCardModal] = useState(false);
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
+  const [listToDelete, setListToDelete] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
+  const [cardToDelete, setCardToDelete] = useState<CardItem | null>(null);
   const [listCards, setListCards] = useState<Record<string, CardItem[]>>({});
-  const [loadingCards, setLoadingCards] = useState(false);
+  const [isDeletingList, setIsDeletingList] = useState(false);
+  const [isDeletingCard, setIsDeletingCard] = useState(false);
+  const queryClient = useQueryClient();
 
   // Queries & Mutations
   const { data: listsData, isLoading: listsLoading } = useLists(
@@ -46,42 +55,15 @@ export function KanbanBoard({
     [listsData?.data?.lists]
   );
 
-  // Fetch cards for each list using useEffect
   useEffect(() => {
-    const fetchAllCards = async () => {
-      if (lists.length === 0) return;
+    const cardsMap: Record<string, CardItem[]> = {};
 
-      setLoadingCards(true);
-      const cardsMap: Record<string, CardItem[]> = {};
+    for (const list of lists) {
+      cardsMap[list.id] = list.cards || [];
+    }
 
-      try {
-        for (const list of lists) {
-          const response = await fetch(
-            `/api/workspaces/${workspaceId}/boards/${boardId}/lists/${list.id}/cards`,
-            {
-              method: 'GET',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-            }
-          );
-
-          if (response.ok) {
-            const data = await response.json();
-            cardsMap[list.id] = data?.data?.cards || [];
-          } else {
-            cardsMap[list.id] = [];
-          }
-        }
-        setListCards(cardsMap);
-      } catch (error) {
-        console.error('Failed to fetch cards:', error);
-      } finally {
-        setLoadingCards(false);
-      }
-    };
-
-    fetchAllCards();
-  }, [lists, workspaceId, boardId]);
+    setListCards(cardsMap);
+  }, [lists]);
 
   const handleCreateList = (data: { title: string }) => {
     createListMutation.mutate(data, {
@@ -96,6 +78,51 @@ export function KanbanBoard({
     setShowAddCardModal(true);
   };
 
+  const moveCardInState = (
+    currentCards: Record<string, CardItem[]>,
+    result: DropResult
+  ) => {
+    const { source, destination, draggableId } = result;
+    if (!destination) return currentCards;
+
+    const sourceCards = [...(currentCards[source.droppableId] || [])];
+    const destinationCards =
+      source.droppableId === destination.droppableId
+        ? sourceCards
+        : [...(currentCards[destination.droppableId] || [])];
+    const [movedCard] = sourceCards.splice(source.index, 1);
+
+    if (!movedCard) return currentCards;
+
+    destinationCards.splice(destination.index, 0, {
+      ...movedCard,
+      id: draggableId,
+      listId: destination.droppableId,
+    });
+
+    if (source.droppableId === destination.droppableId) {
+      return {
+        ...currentCards,
+        [source.droppableId]: destinationCards.map((card, index) => ({
+          ...card,
+          position: index,
+        })),
+      };
+    }
+
+    return {
+      ...currentCards,
+      [source.droppableId]: sourceCards.map((card, index) => ({
+        ...card,
+        position: index,
+      })),
+      [destination.droppableId]: destinationCards.map((card, index) => ({
+        ...card,
+        position: index,
+      })),
+    };
+  };
+
   const handleDragEnd = async (result: DropResult) => {
     const { source, destination, draggableId } = result;
 
@@ -106,6 +133,9 @@ export function KanbanBoard({
     ) {
       return;
     }
+
+    const previousCards = listCards;
+    setListCards(moveCardInState(previousCards, result));
 
     try {
       const response = await fetch(
@@ -127,18 +157,127 @@ export function KanbanBoard({
       }
     } catch (error) {
       console.error('Failed to move card:', error);
+      setListCards(previousCards);
     }
   };
 
-  if (listsLoading || loadingCards) {
+  const handleDeleteList = async () => {
+    if (!listToDelete) return;
+
+    const { id: listId } = listToDelete;
+    const previousLists = queryClient.getQueryData([
+      'lists',
+      workspaceId,
+      boardId,
+    ]);
+    const previousCards = listCards;
+
+    setIsDeletingList(true);
+    queryClient.setQueryData(
+      ['lists', workspaceId, boardId],
+      (current: any) =>
+        current
+          ? {
+              ...current,
+              data: {
+                ...current.data,
+                lists: (current.data?.lists || []).filter(
+                  (list: { id: string }) => list.id !== listId
+                ),
+              },
+            }
+          : current
+    );
+    setListCards((current) => {
+      const next = { ...current };
+      delete next[listId];
+      return next;
+    });
+
+    try {
+      const response = await fetch(
+        `/api/workspaces/${workspaceId}/boards/${boardId}/lists/${listId}`,
+        {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || error.error || 'Failed to delete list');
+      }
+
+      queryClient.invalidateQueries({
+        queryKey: ['lists', workspaceId, boardId],
+      });
+      queryClient.invalidateQueries({ queryKey: ['boards', workspaceId] });
+      setListToDelete(null);
+    } catch (error) {
+      console.error('Failed to delete list:', error);
+      queryClient.setQueryData(['lists', workspaceId, boardId], previousLists);
+      setListCards(previousCards);
+    } finally {
+      setIsDeletingList(false);
+    }
+  };
+
+  const handleDeleteCard = async () => {
+    if (!cardToDelete) return;
+
+    const previousCards = listCards;
+    setListCards((current) => ({
+      ...current,
+      [cardToDelete.listId]: (current[cardToDelete.listId] || []).filter(
+        (item) => item.id !== cardToDelete.id
+      ),
+    }));
+
+    setIsDeletingCard(true);
+    try {
+      const response = await fetch(
+        `/api/workspaces/${workspaceId}/boards/${boardId}/lists/${cardToDelete.listId}/cards/${cardToDelete.id}`,
+        {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || error.error || 'Failed to delete card');
+      }
+
+      queryClient.invalidateQueries({
+        queryKey: ['cards', workspaceId, boardId, cardToDelete.listId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['all-board-cards', workspaceId, boardId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['lists', workspaceId, boardId],
+      });
+      queryClient.invalidateQueries({ queryKey: ['boards', workspaceId] });
+      setCardToDelete(null);
+    } catch (error) {
+      console.error('Failed to delete card:', error);
+      setListCards(previousCards);
+    } finally {
+      setIsDeletingCard(false);
+    }
+  };
+
+  if (listsLoading) {
     return (
       <div className="space-y-gap-lg">
         <Skeleton className="h-12 w-64" />
-        <div className="flex gap-gap-lg overflow-x-auto pb-gap-md">
+        <div className="grid grid-cols-1 gap-gap-lg md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {[1, 2, 3].map((i) => (
             <div
               key={`skeleton-${i}`}
-              className="flex-shrink-0 w-80 space-y-gap-md"
+              className="space-y-gap-md"
             >
               <Skeleton className="h-6 w-32" />
               <Skeleton className="h-40 w-full" />
@@ -164,7 +303,7 @@ export function KanbanBoard({
       </div>
 
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="flex gap-gap-lg overflow-x-auto pb-gap-md">
+        <div className="grid grid-cols-1 gap-gap-lg md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {lists.map((list) => (
             <KanbanList
               key={list.id}
@@ -172,6 +311,10 @@ export function KanbanBoard({
               title={list.title}
               cards={listCards[list.id] || []}
               onAddCard={openAddCardModal}
+              onDeleteList={(listId, title) =>
+                setListToDelete({ id: listId, title })
+              }
+              onDeleteCard={setCardToDelete}
             />
           ))}
 
@@ -207,9 +350,33 @@ export function KanbanBoard({
                 response.card,
               ],
             }));
+            setShowAddCardModal(false);
+            setSelectedListId(null);
           }}
         />
       )}
+
+      <ConfirmDialog
+        open={!!listToDelete}
+        title="Delete List"
+        description={`Delete "${listToDelete?.title || ''}"? This will delete all cards in the list.`}
+        isLoading={isDeletingList}
+        onOpenChange={(open) => {
+          if (!open && !isDeletingList) setListToDelete(null);
+        }}
+        onConfirm={handleDeleteList}
+      />
+
+      <ConfirmDialog
+        open={!!cardToDelete}
+        title="Delete Card"
+        description={`Delete "${cardToDelete?.title || ''}"?`}
+        isLoading={isDeletingCard}
+        onOpenChange={(open) => {
+          if (!open && !isDeletingCard) setCardToDelete(null);
+        }}
+        onConfirm={handleDeleteCard}
+      />
     </>
   );
 }

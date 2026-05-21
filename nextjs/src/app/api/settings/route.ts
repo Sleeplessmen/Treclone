@@ -28,9 +28,9 @@ export async function PATCH(request: NextRequest) {
 
     // Route to appropriate handler based on body content
     if ('currentPassword' in body || 'newPassword' in body) {
-        return controller.changePassword(request, userId)
+        return controller.changePassword(request, userId, body)
     } else {
-        return controller.updateUserPreferences(request, userId)
+        return controller.updateUserPreferences(request, userId, body)
     }
 }
 

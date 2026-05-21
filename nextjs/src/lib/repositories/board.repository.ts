@@ -2,7 +2,7 @@ import prisma from '@/lib/prisma'
 
 export class BoardRepository {
     async getBoardsByWorkspaceId(workspaceId: bigint) {
-        return prisma.board.findMany({
+        const boards = await prisma.board.findMany({
             where: { workspaceId },
             select: {
                 id: true,
@@ -15,9 +15,27 @@ export class BoardRepository {
                 _count: {
                     select: { lists: true },
                 },
+                lists: {
+                    select: {
+                        _count: {
+                            select: { cards: true },
+                        },
+                    },
+                },
             },
             orderBy: { createdAt: 'desc' },
         })
+
+        return boards.map(({ lists, _count, ...board }) => ({
+            ...board,
+            _count: {
+                ..._count,
+                cards: lists.reduce(
+                    (total, list) => total + list._count.cards,
+                    0
+                ),
+            },
+        }))
     }
 
     async getBoardById(boardId: bigint) {

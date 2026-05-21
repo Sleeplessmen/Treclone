@@ -11,6 +11,20 @@ export class ListRepository {
                 boardId: true,
                 createdAt: true,
                 updatedAt: true,
+                cards: {
+                    select: {
+                        id: true,
+                        title: true,
+                        description: true,
+                        position: true,
+                        listId: true,
+                        assigneeUserId: true,
+                        createdBy: true,
+                        createdAt: true,
+                        updatedAt: true,
+                    },
+                    orderBy: { position: 'asc' },
+                },
                 _count: {
                     select: { cards: true },
                 },
