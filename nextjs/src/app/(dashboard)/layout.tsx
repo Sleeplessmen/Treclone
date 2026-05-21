@@ -1,10 +1,24 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import {
+  Bell,
+  ChevronDown,
+  LayoutGrid,
+  Search,
+  Settings2,
+  Star,
+  Activity,
+  Users,
+  LogOut,
+} from 'lucide-react';
 import { useAuth } from '@/hooks/auth/use-auth';
+import { useWorkspaces } from '@/hooks/workspace';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function DashboardLayout({
   children,
@@ -13,6 +27,18 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const { user, logout, isLoading } = useAuth();
+  const { data: workspacesData } = useWorkspaces();
+  const [searchValue, setSearchValue] = useState('');
+
+  const workspaces = workspacesData?.workspaces ?? [];
+  const selectedWorkspace = workspaces[0];
+
+  const workspaceId = selectedWorkspace?.id ?? '';
+  const workspaceName = selectedWorkspace?.name ?? 'Select workspace';
+
+  const userInitial = useMemo(() => {
+    return user?.fullName?.trim()?.charAt(0)?.toUpperCase() ?? '?';
+  }, [user]);
 
   const handleLogout = async () => {
     try {
@@ -24,80 +50,173 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="flex bg-canvas min-h-screen">
-      {/* Sidebar - Level 1 Surface */}
-      <aside className="w-64 bg-surface-1 p-gap-md border-r border-hairline-ghost flex flex-col gap-gap-lg sticky top-0 h-screen overflow-y-auto">
-        {/* Logo/Brand */}
-        <div className="flex items-center gap-gap-sm">
-          <div className="w-8 h-8 bg-primary rounded-sm" />
-          <h2 className="text-headline-sm font-heading text-ink">Treclone</h2>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex flex-col gap-gap-sm flex-1">
-          <Link
-            href="/workspaces"
-            className="text-body text-ink px-gap-md py-gap-sm rounded-sm hover:bg-canvas transition-colors"
-          >
-            Workspaces
+    <div className="min-h-screen bg-canvas">
+      <header className="sticky top-0 z-40 border-b border-hairline-ghost bg-surface-1/95 backdrop-blur">
+        <div className="flex h-16 items-center gap-gap-md px-gap-lg">
+          <Link href="/workspaces" className="flex items-center gap-gap-sm">
+            <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-primary">
+              <span className="text-sm font-heading text-white">T</span>
+            </div>
+            <div className="leading-tight">
+              <div className="text-headline-sm font-heading text-ink">
+                Treclone
+              </div>
+              <div className="text-label-xs text-ink-muted">
+                Project workspace
+              </div>
+            </div>
           </Link>
-          <Link
-            href="/settings"
-            className="text-body text-ink px-gap-md py-gap-sm rounded-sm hover:bg-canvas transition-colors"
-          >
-            Settings
-          </Link>
-        </nav>
 
-        {/* User Menu */}
-        <div className="pt-gap-md border-t border-hairline-ghost space-y-gap-md">
-          {user ? (
-            <>
-              {/* User Profile - Clickable */}
-              <Link
-                href="/profile"
-                className="block px-gap-md py-gap-sm rounded-sm hover:bg-canvas transition-colors group cursor-pointer"
-              >
-                <div className="flex items-center gap-gap-sm mb-gap-sm">
-                  {/* Avatar */}
-                  <div className="w-8 h-8 bg-primary rounded-sm flex items-center justify-center flex-shrink-0 group-hover:ring-2 group-hover:ring-primary transition-all">
-                    <span className="text-xs font-heading text-white">
-                      {user.fullName.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  {/* User Info */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-label-sm font-semibold text-ink truncate group-hover:text-primary transition-colors">
-                      {user.fullName}
-                    </p>
-                    <p className="text-label-xs text-ink-muted truncate">
-                      {user.email}
-                    </p>
-                  </div>
+          <div className="flex flex-1 items-center justify-center px-gap-lg">
+            <div className="relative w-full max-w-xl">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+              <Input
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                placeholder="Search boards, tasks, members..."
+                className="h-10 pl-10"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-gap-sm">
+            <Button variant="ghost" size="icon-sm" aria-label="Notifications">
+              <Bell className="h-4 w-4" />
+            </Button>
+            <ThemeToggle />
+
+            {user ? (
+              <div className="flex items-center gap-gap-sm rounded-sm px-gap-sm py-gap-xs">
+                <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-primary">
+                  <span className="text-xs font-heading text-white">
+                    {userInitial}
+                  </span>
                 </div>
-              </Link>
-
-              {/* Logout Button */}
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={handleLogout}
-                disabled={isLoading}
-                size="sm"
-              >
-                {isLoading ? 'Logging out...' : 'Logout'}
-              </Button>
-            </>
-          ) : (
-            <p className="text-label-sm text-ink-muted text-center">
-              Loading...
-            </p>
-          )}
+                <div className="min-w-0">
+                  <p className="truncate text-label-sm font-semibold text-ink">
+                    {user.fullName}
+                  </p>
+                  <p className="truncate text-label-xs text-ink-muted">
+                    {user.email}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="h-9 w-36 animate-pulse rounded-sm bg-surface-2" />
+            )}
+          </div>
         </div>
-      </aside>
+      </header>
 
-      {/* Main Content Area - Canvas Level */}
-      <main className="flex-1 p-gap-xl overflow-auto">{children}</main>
+      <div className="flex min-h-[calc(100vh-4rem)]">
+        <aside className="flex w-72 flex-col border-r border-hairline-ghost bg-surface-1">
+          <div className="border-b border-hairline-ghost p-gap-md">
+            <details className="group">
+              <summary className="flex cursor-pointer list-none items-center justify-between rounded-sm px-gap-md py-gap-sm hover:bg-canvas">
+                <div className="min-w-0">
+                  <p className="text-label-xs uppercase tracking-wide text-ink-muted">
+                    Workspace
+                  </p>
+                  <p className="truncate text-body font-semibold text-ink">
+                    {workspaceName}
+                  </p>
+                </div>
+                <ChevronDown className="h-4 w-4 text-ink-muted transition-transform group-open:rotate-180" />
+              </summary>
+
+              <div className="mt-gap-sm space-y-gap-xs rounded-sm border border-hairline-ghost bg-surface-2 p-gap-sm">
+                <Link
+                  href="/workspaces"
+                  className="block rounded-sm px-gap-md py-gap-sm text-body text-ink hover:bg-canvas"
+                >
+                  All workspaces
+                </Link>
+
+                {workspaces.map((workspace) => (
+                  <Link
+                    key={workspace.id}
+                    href={`/workspaces/${workspace.id}`}
+                    className="block rounded-sm px-gap-md py-gap-sm text-body text-ink hover:bg-canvas"
+                  >
+                    {workspace.name}
+                  </Link>
+                ))}
+              </div>
+            </details>
+          </div>
+
+          <nav className="flex flex-1 flex-col gap-gap-xs p-gap-md">
+            <Link
+              href={
+                workspaceId
+                  ? `/workspaces/${workspaceId}/boards`
+                  : '/workspaces'
+              }
+              className="flex items-center gap-gap-sm rounded-sm px-gap-md py-gap-sm text-body text-ink hover:bg-canvas"
+            >
+              <LayoutGrid className="h-4 w-4" />
+              <span>All boards</span>
+            </Link>
+
+            <Link
+              href={
+                workspaceId
+                  ? `/workspaces/${workspaceId}/starred`
+                  : '/workspaces'
+              }
+              className="flex items-center gap-gap-sm rounded-sm px-gap-md py-gap-sm text-body text-ink hover:bg-canvas"
+            >
+              <Star className="h-4 w-4" />
+              <span>Starred</span>
+            </Link>
+
+            <Link
+              href={
+                workspaceId
+                  ? `/workspaces/${workspaceId}/activity`
+                  : '/workspaces'
+              }
+              className="flex items-center gap-gap-sm rounded-sm px-gap-md py-gap-sm text-body text-ink hover:bg-canvas"
+            >
+              <Activity className="h-4 w-4" />
+              <span>Activity</span>
+            </Link>
+
+            <Link
+              href={
+                workspaceId
+                  ? `/workspaces/${workspaceId}/members`
+                  : '/workspaces'
+              }
+              className="flex items-center gap-gap-sm rounded-sm px-gap-md py-gap-sm text-body text-ink hover:bg-canvas"
+            >
+              <Users className="h-4 w-4" />
+              <span>Team members</span>
+            </Link>
+          </nav>
+
+          <div className="mt-auto border-t border-hairline-ghost p-gap-md">
+            <Button asChild variant="ghost" className="w-full justify-start">
+              <Link href="/settings">
+                <Settings2 className="mr-gap-sm h-4 w-4" />
+                Settings
+              </Link>
+            </Button>
+
+            <Button
+              variant="outline"
+              className="mt-gap-sm w-full justify-start"
+              onClick={handleLogout}
+              disabled={isLoading}
+            >
+              <LogOut className="mr-gap-sm h-4 w-4" />
+              {isLoading ? 'Logging out...' : 'Logout'}
+            </Button>
+          </div>
+        </aside>
+
+        <main className="flex-1 overflow-auto p-gap-xl">{children}</main>
+      </div>
     </div>
   );
 }

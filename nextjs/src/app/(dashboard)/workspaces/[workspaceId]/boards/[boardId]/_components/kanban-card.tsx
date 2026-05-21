@@ -1,7 +1,7 @@
 'use client';
 
 import { Draggable } from '@hello-pangea/dnd';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/cn';
 import { Trash2 } from 'lucide-react';
 
 interface Card {
@@ -18,7 +18,11 @@ interface KanbanCardProps {
   onDelete: (card: Card) => void;
 }
 
-export function KanbanCard({ card, index, onDelete }: KanbanCardProps) {
+export function KanbanCard({
+  card,
+  index,
+  onDelete,
+}: Readonly<KanbanCardProps>) {
   return (
     <Draggable draggableId={card.id} index={index}>
       {(provided, snapshot) => (

@@ -1,4 +1,4 @@
-import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { ThemeToggle } from '@/components/theme-toggle';
 import React from 'react';
 
 export default function MarketingLayout({
