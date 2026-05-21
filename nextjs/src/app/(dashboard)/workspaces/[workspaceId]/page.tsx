@@ -39,8 +39,12 @@ export default function WorkspaceDetailPage() {
       <main className="space-y-gap-lg">
         <Skeleton className="h-12 w-64" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gap-lg">
-          {[new Array(3)].map((_, i) => (
-            <Card key={i}>
+          {[
+            'workspace-skeleton-1',
+            'workspace-skeleton-2',
+            'workspace-skeleton-3',
+          ].map((id) => (
+            <Card key={id}>
               <CardContent className="pt-gap-lg space-y-gap-md">
                 <Skeleton className="h-6 w-32" />
                 <Skeleton className="h-4 w-full" />
@@ -52,6 +56,59 @@ export default function WorkspaceDetailPage() {
       </main>
     );
   }
+
+  const boardsContent =
+    boards.length > 0 ? (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gap-lg">
+        {boards.map((board: any) => (
+          <Card
+            key={board.id}
+            className="hover:shadow-md transition-shadow cursor-pointer group"
+          >
+            <CardContent className="pt-gap-lg space-y-gap-md">
+              <a href={`/workspaces/${workspaceId}/boards/${board.id}`}>
+                <h3 className="text-title-md font-heading text-ink hover:text-primary transition-colors">
+                  {board.title}
+                </h3>
+              </a>
+              <p className="text-body text-ink-muted line-clamp-2">
+                {board.description}
+              </p>
+              <div className="flex gap-gap-md text-label-sm text-ink-muted">
+                <span>{board._count?.lists || 0} lists</span>
+                <span>{board._count?.cards || 0} cards</span>
+              </div>
+              <div className="flex gap-gap-sm">
+                <Button asChild variant="ghost" size="sm" className="flex-1">
+                  <a href={`/workspaces/${workspaceId}/boards/${board.id}`}>
+                    Open
+                  </a>
+                </Button>
+                <DeleteBoardButton
+                  workspaceId={workspaceId}
+                  boardId={board.id}
+                  boardTitle={board.title}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    ) : (
+      <Card>
+        <CardContent className="py-gap-xl text-center">
+          <p className="text-body text-ink-muted mb-gap-md">
+            No boards yet. Create one to get started!
+          </p>
+          <Button
+            variant="default"
+            onClick={() => setShowCreateBoardModal(true)}
+          >
+            Create Your First Board
+          </Button>
+        </CardContent>
+      </Card>
+    );
 
   return (
     <main className="space-y-gap-lg">
@@ -70,72 +127,24 @@ export default function WorkspaceDetailPage() {
           New Board
         </Button>
       </div>
-
       {/* Boards Grid */}
       {boardsLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gap-lg">
-          {[new Array(3)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="pt-gap-lg space-y-gap-md">
-                <Skeleton className="h-6 w-32" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-9 w-full" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : boards.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gap-lg">
-          {boards.map((board: any) => (
-            <Card
-              key={board.id}
-              className="hover:shadow-md transition-shadow cursor-pointer group"
-            >
-              <CardContent className="pt-gap-lg space-y-gap-md">
-                <a href={`/workspaces/${workspaceId}/boards/${board.id}`}>
-                  <h3 className="text-title-md font-heading text-ink hover:text-primary transition-colors">
-                    {board.title}
-                  </h3>
-                </a>
-                <p className="text-body text-ink-muted line-clamp-2">
-                  {board.description}
-                </p>
-                <div className="flex gap-gap-md text-label-sm text-ink-muted">
-                  <span>{board._count?.lists || 0} lists</span>
-                  <span>{board._count?.cards || 0} cards</span>
-                </div>
-                <div className="flex gap-gap-sm">
-                  <Button asChild variant="ghost" size="sm" className="flex-1">
-                    <a href={`/workspaces/${workspaceId}/boards/${board.id}`}>
-                      Open
-                    </a>
-                  </Button>
-                  <DeleteBoardButton
-                    workspaceId={workspaceId}
-                    boardId={board.id}
-                    boardTitle={board.title}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          {['board-skeleton-1', 'board-skeleton-2', 'board-skeleton-3'].map(
+            (id) => (
+              <Card key={id}>
+                <CardContent className="pt-gap-lg space-y-gap-md">
+                  <Skeleton className="h-6 w-32" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-9 w-full" />
+                </CardContent>
+              </Card>
+            )
+          )}
         </div>
       ) : (
-        <Card>
-          <CardContent className="py-gap-xl text-center">
-            <p className="text-body text-ink-muted mb-gap-md">
-              No boards yet. Create one to get started!
-            </p>
-            <Button
-              variant="default"
-              onClick={() => setShowCreateBoardModal(true)}
-            >
-              Create Your First Board
-            </Button>
-          </CardContent>
-        </Card>
+        boardsContent
       )}
-
       {/* Create Board Modal */}
       {showCreateBoardModal && (
         <CreateBoardModal

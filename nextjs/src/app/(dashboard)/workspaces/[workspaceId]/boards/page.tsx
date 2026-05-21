@@ -35,16 +35,18 @@ export default function BoardsPage() {
 
         {/* Grid Skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gap-lg">
-          {[...Array(3)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="pt-gap-lg space-y-gap-md">
-                <Skeleton className="h-6 w-32" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-9 w-9" />
-              </CardContent>
-            </Card>
-          ))}
+          {['board-skeleton-1', 'board-skeleton-2', 'board-skeleton-3'].map(
+            (id) => (
+              <Card key={id}>
+                <CardContent className="pt-gap-lg space-y-gap-md">
+                  <Skeleton className="h-6 w-32" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-9 w-9" />
+                </CardContent>
+              </Card>
+            )
+          )}
         </div>
       </main>
     );

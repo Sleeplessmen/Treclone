@@ -49,8 +49,13 @@ export default function CardDetailPage() {
         {/* Form Skeleton */}
         <Card>
           <CardContent className="pt-gap-lg space-y-gap-lg">
-            {[new Array(4)].map((_, i) => (
-              <div key={i} className="space-y-gap-sm">
+            {[
+              'card-skeleton-1',
+              'card-skeleton-2',
+              'card-skeleton-3',
+              'card-skeleton-4',
+            ].map((id) => (
+              <div key={id} className="space-y-gap-sm">
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-10 w-full" />
               </div>
