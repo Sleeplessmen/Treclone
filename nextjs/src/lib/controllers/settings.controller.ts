@@ -28,9 +28,13 @@ export class SettingsController {
         }
     }
 
-    async updateUserPreferences(request: NextRequest, userId: bigint) {
+    async updateUserPreferences(
+        request: NextRequest,
+        userId: bigint,
+        parsedBody?: unknown
+    ) {
         try {
-            const body = await request.json()
+            const body = parsedBody ?? await request.json()
             const updated = await this.service.updateUserPreferences(userId, body)
 
             return NextResponse.json(
@@ -51,9 +55,13 @@ export class SettingsController {
         }
     }
 
-    async changePassword(request: NextRequest, userId: bigint) {
+    async changePassword(
+        request: NextRequest,
+        userId: bigint,
+        parsedBody?: unknown
+    ) {
         try {
-            const body = await request.json()
+            const body = parsedBody ?? await request.json()
             await this.service.changePassword(userId, body)
 
             return NextResponse.json(

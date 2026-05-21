@@ -1,9 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useWorkspaces, useCreateWorkspace } from '@/hooks/workspace';
+import {
+  useWorkspaces,
+  useCreateWorkspace,
+  useDeleteWorkspace,
+} from '@/hooks/workspace';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Plus, Settings, Trash2, Users } from 'lucide-react';
 import { Label } from '@/components/ui/label';
@@ -132,13 +137,10 @@ export default function WorkspacesPage() {
                         <Settings className="w-4 h-4" />
                       </a>
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      className="text-destructive hover:bg-destructive/10"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <DeleteWorkspaceButton
+                      workspaceId={workspace.id}
+                      workspaceName={workspace.name}
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -170,6 +172,44 @@ export default function WorkspacesPage() {
         />
       )}
     </main>
+  );
+}
+
+function DeleteWorkspaceButton({
+  workspaceId,
+  workspaceName,
+}: Readonly<{
+  workspaceId: string;
+  workspaceName: string;
+}>) {
+  const [showConfirm, setShowConfirm] = useState(false);
+  const deleteWorkspaceMutation = useDeleteWorkspace(workspaceId);
+
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        className="text-destructive hover:bg-destructive/10"
+        type="button"
+        disabled={deleteWorkspaceMutation.isPending}
+        onClick={() => setShowConfirm(true)}
+      >
+        <Trash2 className="w-4 h-4" />
+      </Button>
+      <ConfirmDialog
+        open={showConfirm}
+        title="Delete Workspace"
+        description={`Delete "${workspaceName}"? This will delete its boards, lists, and cards.`}
+        isLoading={deleteWorkspaceMutation.isPending}
+        onOpenChange={setShowConfirm}
+        onConfirm={() => {
+          deleteWorkspaceMutation.mutate(undefined, {
+            onSuccess: () => setShowConfirm(false),
+          });
+        }}
+      />
+    </>
   );
 }
 

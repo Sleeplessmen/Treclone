@@ -72,6 +72,10 @@ export function useCreateCard(
             queryClient.invalidateQueries({
                 queryKey: ['all-board-cards', workspaceId, boardId],
             })
+            queryClient.invalidateQueries({
+                queryKey: ['lists', workspaceId, boardId],
+            })
+            queryClient.invalidateQueries({ queryKey: ['boards', workspaceId] })
         },
     })
 }
@@ -156,6 +160,10 @@ export function useDeleteCard(
             queryClient.invalidateQueries({
                 queryKey: ['all-board-cards', workspaceId, boardId],
             })
+            queryClient.invalidateQueries({
+                queryKey: ['lists', workspaceId, boardId],
+            })
+            queryClient.invalidateQueries({ queryKey: ['boards', workspaceId] })
         },
     })
 }
@@ -197,6 +205,10 @@ export function useMoveCard(
             queryClient.invalidateQueries({
                 queryKey: ['all-board-cards', workspaceId, boardId],
             })
+            queryClient.invalidateQueries({
+                queryKey: ['lists', workspaceId, boardId],
+            })
+            queryClient.invalidateQueries({ queryKey: ['boards', workspaceId] })
         },
     })
 }

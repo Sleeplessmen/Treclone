@@ -2,6 +2,18 @@
 
 import { useQuery } from '@tanstack/react-query'
 
+interface Card {
+    id: string
+    title: string
+    description?: string | null
+    position: number
+    listId: string
+    assigneeUserId?: string | null
+    createdBy?: string
+    createdAt: string
+    updatedAt: string
+}
+
 interface List {
     id: string
     title: string
@@ -9,6 +21,7 @@ interface List {
     boardId: string
     createdAt: string
     updatedAt: string
+    cards?: Card[]
 }
 
 interface FetchListsResponse {
