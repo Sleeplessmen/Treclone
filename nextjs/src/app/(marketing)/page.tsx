@@ -1,13 +1,21 @@
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { getServerSession } from 'next-auth';
-import { Button } from '@/components/ui/button';
+import * as jwt from 'jsonwebtoken';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { JWT_SECRET } from '@/lib/utils/auth';
 
 export default async function MarketingHomePage() {
-  const session = await getServerSession();
+  const cookieStore = await cookies();
+  const token = cookieStore.get('accessToken')?.value;
 
-  if (session) {
-    redirect('/boards');
+  if (token) {
+    try {
+      jwt.verify(token, JWT_SECRET);
+      redirect('/boards');
+    } catch {
+      // Invalid or expired token, show the public landing page
+    }
   }
 
   return (
@@ -40,7 +48,6 @@ export default async function MarketingHomePage() {
             Tính năng chính
           </h2>
           <div className="grid md:grid-cols-3 gap-gap-lg">
-            {/* Feature 1 */}
             <div className="bg-surface-2 rounded-sm p-gap-md space-y-gap-sm">
               <div className="w-12 h-12 bg-primary rounded-sm" />
               <h3 className="text-title-md font-heading text-ink">
@@ -50,7 +57,6 @@ export default async function MarketingHomePage() {
                 Drag and drop các thẻ để sắp xếp công việc một cách trực quan
               </p>
             </div>
-            {/* Feature 2 */}
             <div className="bg-surface-2 rounded-sm p-gap-md space-y-gap-sm">
               <div className="w-12 h-12 bg-primary rounded-sm" />
               <h3 className="text-title-md font-heading text-ink">
@@ -60,7 +66,6 @@ export default async function MarketingHomePage() {
                 Chia sẻ bảng với đội ngũ và làm việc cùng nhau thời gian thực
               </p>
             </div>
-            {/* Feature 3 */}
             <div className="bg-surface-2 rounded-sm p-gap-md space-y-gap-sm">
               <div className="w-12 h-12 bg-primary rounded-sm" />
               <h3 className="text-title-md font-heading text-ink">

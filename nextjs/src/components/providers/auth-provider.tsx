@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect, useState, useMemo } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { AuthContext, AuthContextType, User } from '@/contexts/auth-context';
 
 export function AuthProvider({ children }: { readonly children: ReactNode }) {
@@ -8,16 +8,12 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Fetch current user on mount
-  useEffect(() => {
-    fetchCurrentUser();
-  }, []);
-
-  async function fetchCurrentUser() {
+  const fetchCurrentUser = useCallback(async () => {
     try {
       const response = await fetch('/api/auth/me', {
         credentials: 'include',
       });
+
       if (response.ok) {
         const data = await response.json();
         setUser({
@@ -35,51 +31,61 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, []);
 
-  async function login(email: string, password: string) {
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-        credentials: 'include',
-      });
+  useEffect(() => {
+    fetchCurrentUser();
+  }, [fetchCurrentUser]);
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Login failed');
+  const login = useCallback(
+    async (email: string, password: string) => {
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Login failed');
+        }
+
+        await fetchCurrentUser();
+      } finally {
+        setIsLoading(false);
       }
+    },
+    [fetchCurrentUser]
+  );
 
-      await fetchCurrentUser();
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  const register = useCallback(
+    async (email: string, password: string, fullName: string) => {
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, fullName }),
+          credentials: 'include',
+        });
 
-  async function register(email: string, password: string, fullName: string) {
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, fullName }),
-        credentials: 'include',
-      });
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Registration failed');
+        }
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Registration failed');
+        await fetchCurrentUser();
+      } finally {
+        setIsLoading(false);
       }
+    },
+    [fetchCurrentUser]
+  );
 
-      await fetchCurrentUser();
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function logout() {
+  const logout = useCallback(async () => {
     setIsLoading(true);
     try {
       await fetch('/api/auth/logout', {
@@ -94,11 +100,11 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, []);
 
-  async function refetch() {
+  const refetch = useCallback(async () => {
     await fetchCurrentUser();
-  }
+  }, [fetchCurrentUser]);
 
   const value: AuthContextType = useMemo(
     () => ({
@@ -110,7 +116,7 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
       logout,
       refetch,
     }),
-    [user, isLoading, isAuthenticated]
+    [user, isLoading, isAuthenticated, login, register, logout, refetch]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

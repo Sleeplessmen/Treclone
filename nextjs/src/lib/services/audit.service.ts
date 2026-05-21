@@ -1,4 +1,5 @@
 import prisma from '@/lib/db/prisma'
+import type { Prisma } from '../../../prisma/generated/client/client'
 
 interface CreateAuditLogParams {
     userId: bigint
@@ -6,10 +7,10 @@ interface CreateAuditLogParams {
     entity: string
     entityId: bigint
     workspaceId?: bigint
-    changes?: Record<string, any>
+    changes?: Prisma.JsonValue
     status: 'SUCCESS' | 'FAILURE'
     errorMessage?: string
-    metadata?: Record<string, any>
+    metadata?: Prisma.JsonValue
 }
 
 export async function createAuditLog({

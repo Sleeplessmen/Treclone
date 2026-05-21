@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { rateLimit, getClientIp, rateLimitHeaders } from '@/lib/utils/rate-limit'
-import { createAuditLog, AuditAction, AuditEntity } from '@/lib/types/audit-log'
+import { AuditAction, AuditEntity } from '@/lib/types/audit-log'
+import { createAuditLog } from '@/lib/services/audit.service'
 import { captureException, ErrorCode, generateCorrelationId } from '@/lib/utils/error-tracking'
 import { verifyTokenFromCookie } from '@/lib/utils/auth'
 
@@ -17,7 +18,7 @@ export async function apiMiddleware(
 ): Promise<Response> {
     const correlationId = generateCorrelationId()
     const clientIp = getClientIp(request)
-    const { valid, userId } = verifyTokenFromCookie(request)
+    const { userId } = verifyTokenFromCookie(request)
 
     // Rate limiting: 100 requests per minute per IP
     const rateLimitResult = rateLimit(`ip:${clientIp}`, {
@@ -79,17 +80,28 @@ export async function apiMiddleware(
 
         // Log successful mutation operations
         if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
-            createAuditLog({
-                userId: userId || 'anonymous',
-                action: request.method === 'POST' ? AuditAction.CREATE :
-                    request.method === 'DELETE' ? AuditAction.DELETE : AuditAction.UPDATE,
-                entity: getEntityFromPath(request.url),
-                entityId: extractEntityId(request.url),
-                ipAddress: clientIp,
-                userAgent: request.headers.get('user-agent') || undefined,
-                status: 'SUCCESS',
-                metadata: { correlationId },
-            }).catch(() => { }) // Don't block on audit log errors
+            const entityId = extractEntityId(request.url)
+            const action =
+                request.method === 'POST'
+                    ? AuditAction.CREATE
+                    : request.method === 'DELETE'
+                        ? AuditAction.DELETE
+                        : AuditAction.UPDATE
+
+            if (userId && entityId !== null) {
+                createAuditLog({
+                    userId,
+                    action,
+                    entity: getEntityFromPath(request.url),
+                    entityId,
+                    status: 'SUCCESS',
+                    metadata: {
+                        correlationId,
+                        ipAddress: clientIp,
+                        userAgent: request.headers.get('user-agent') || undefined,
+                    },
+                }).catch(() => { })
+            }
         }
 
         // Add correlation ID to all responses
@@ -108,17 +120,22 @@ export async function apiMiddleware(
 
         // Log failed operations
         if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
-            createAuditLog({
-                userId: userId || 'anonymous',
-                action: AuditAction.UPDATE,
-                entity: getEntityFromPath(request.url),
-                entityId: extractEntityId(request.url),
-                ipAddress: clientIp,
-                userAgent: request.headers.get('user-agent') || undefined,
-                status: 'FAILURE',
-                errorMessage: error instanceof Error ? error.message : String(error),
-                metadata: { correlationId },
-            }).catch(() => { })
+            const entityId = extractEntityId(request.url)
+            if (userId && entityId !== null) {
+                createAuditLog({
+                    userId,
+                    action: AuditAction.UPDATE,
+                    entity: getEntityFromPath(request.url),
+                    entityId,
+                    status: 'FAILURE',
+                    errorMessage: error instanceof Error ? error.message : String(error),
+                    metadata: {
+                        correlationId,
+                        ipAddress: clientIp,
+                        userAgent: request.headers.get('user-agent') || undefined,
+                    },
+                }).catch(() => { })
+            }
         }
 
         return NextResponse.json(
@@ -146,7 +163,8 @@ function getEntityFromPath(url: string): AuditEntity {
     return AuditEntity.USER
 }
 
-function extractEntityId(url: string): string {
-    const match = url.match(/\/([0-9]+)(?:\/|$)/)
-    return match?.[1] || 'unknown'
+function extractEntityId(url: string): bigint | null {
+    const regex = /\/(\d+)(?:\/|$)/
+    const match = regex.exec(url)
+    return match?.[1] ? BigInt(match[1]) : null
 }

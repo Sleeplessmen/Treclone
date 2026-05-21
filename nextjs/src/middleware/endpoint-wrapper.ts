@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { rateLimit, getClientIp, rateLimitHeaders } from '@/lib/utils/rate-limit'
-import { createAuditLog, AuditAction, AuditEntity } from '@/lib/types/audit-log'
+import { AuditAction, AuditEntity } from '@/lib/types/audit-log'
+import { createAuditLog } from '@/lib/services/audit.service'
 import { captureException, generateCorrelationId, ErrorCode } from '@/lib/utils/error-tracking'
 import { verifyTokenFromCookie } from '@/lib/utils/auth'
 
@@ -11,6 +12,19 @@ export interface EndpointContext {
     method: string
     endpoint: string
     entity: AuditEntity
+}
+
+interface AuditEventInput {
+    userId: bigint | null
+    method: string
+    entity: AuditEntity
+    endpoint: string
+    clientIp: string
+    userAgent?: string
+    correlationId: string
+    status: 'SUCCESS' | 'FAILURE'
+    responseStatus?: number
+    errorMessage?: string
 }
 
 export async function withMiddleware(
@@ -25,40 +39,18 @@ export async function withMiddleware(
         const endpoint = new URL(request.url).pathname
         const method = request.method
 
-        // Rate limiting
-        const rateLimitResult = rateLimit(`ip:${clientIp}`, rateLimitConfig)
-        const headers = new Headers(rateLimitHeaders(rateLimitResult))
+        const headers = new Headers(rateLimitHeaders(rateLimit('ip:' + clientIp, rateLimitConfig)))
         headers.set('X-Correlation-ID', correlationId)
 
-        if (!rateLimitResult.success) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Rate limit exceeded',
-                    errorCode: ErrorCode.RATE_LIMITED,
-                    correlationId,
-                },
-                { status: 429, headers }
-            )
-        }
-
-        // User rate limiting
-        if (userId) {
-            const userRateLimit = rateLimit(`user:${userId}`, {
-                interval: 60000,
-                maxRequests: 500,
-            })
-            if (!userRateLimit.success) {
-                return NextResponse.json(
-                    {
-                        success: false,
-                        error: 'Rate limit exceeded',
-                        errorCode: ErrorCode.RATE_LIMITED,
-                        correlationId,
-                    },
-                    { status: 429, headers }
-                )
-            }
+        const rateLimitResponse = getRateLimitResponse({
+            clientIp,
+            userId,
+            headers,
+            correlationId,
+            rateLimitConfig,
+        })
+        if (rateLimitResponse) {
+            return rateLimitResponse
         }
 
         const context: EndpointContext = {
@@ -73,38 +65,23 @@ export async function withMiddleware(
         try {
             const response = await handler(request, context)
 
-            // Audit log mutations
-            if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-                const action = getAuditAction(method)
-
-                try {
-                    await createAuditLog({
-                        userId: userId || 'anonymous',
-                        action,
-                        entity,
-                        entityId: extractIdFromUrl(endpoint),
-                        ipAddress: clientIp,
-                        userAgent: request.headers.get('user-agent') || undefined,
-                        status: 'SUCCESS',
-                        metadata: { correlationId, statusCode: response.status },
-                    })
-                } catch (auditError) {
-                    console.error('[Endpoint] Failed to create audit log:', auditError, {
-                        correlationId,
-                        endpoint,
-                    })
-                }
-            }
-
-            // Add correlation header to response
-            headers.forEach((value, key) => {
-                response.headers.set(key, value)
+            await safeCreateAuditLog({
+                userId,
+                method,
+                entity,
+                endpoint,
+                clientIp,
+                userAgent: request.headers.get('user-agent') || undefined,
+                correlationId,
+                status: 'SUCCESS',
+                responseStatus: response.status,
             })
 
+            applyHeaders(response, headers)
             return response
         } catch (error) {
-            // Error tracking and logging
             const errorMessage = error instanceof Error ? error.message : String(error)
+
             console.error('[Endpoint] Handler error:', {
                 error: errorMessage,
                 correlationId,
@@ -120,29 +97,17 @@ export async function withMiddleware(
                 userId: userId?.toString(),
             })
 
-            // Audit log failures
-            if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-                const action = getAuditAction(method)
-
-                try {
-                    await createAuditLog({
-                        userId: userId || 'anonymous',
-                        action,
-                        entity,
-                        entityId: extractIdFromUrl(endpoint),
-                        ipAddress: clientIp,
-                        userAgent: request.headers.get('user-agent') || undefined,
-                        status: 'FAILURE',
-                        errorMessage,
-                        metadata: { correlationId },
-                    })
-                } catch (auditError) {
-                    console.error('[Endpoint] Failed to create failure audit log:', auditError, {
-                        correlationId,
-                        endpoint,
-                    })
-                }
-            }
+            await safeCreateAuditLog({
+                userId,
+                method,
+                entity,
+                endpoint,
+                clientIp,
+                userAgent: request.headers.get('user-agent') || undefined,
+                correlationId,
+                status: 'FAILURE',
+                errorMessage,
+            })
 
             return NextResponse.json(
                 {
@@ -157,14 +122,107 @@ export async function withMiddleware(
     }
 }
 
+function getRateLimitResponse(params: {
+    clientIp: string
+    userId: bigint | null
+    headers: Headers
+    correlationId: string
+    rateLimitConfig?: { interval: number; maxRequests: number }
+}): NextResponse | null {
+    const ipLimit = rateLimit('ip:' + params.clientIp, params.rateLimitConfig)
+    if (!ipLimit.success) {
+        return NextResponse.json(
+            {
+                success: false,
+                error: 'Rate limit exceeded',
+                errorCode: ErrorCode.RATE_LIMITED,
+                correlationId: params.correlationId,
+            },
+            { status: 429, headers: params.headers }
+        )
+    }
+
+    if (!params.userId) {
+        return null
+    }
+
+    const userLimit = rateLimit('user:' + params.userId.toString(), {
+        interval: 60000,
+        maxRequests: 500,
+    })
+
+    if (!userLimit.success) {
+        return NextResponse.json(
+            {
+                success: false,
+                error: 'Rate limit exceeded',
+                errorCode: ErrorCode.RATE_LIMITED,
+                correlationId: params.correlationId,
+            },
+            { status: 429, headers: params.headers }
+        )
+    }
+
+    return null
+}
+
+function isMutationMethod(method: string): boolean {
+    return method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'DELETE'
+}
+
+async function safeCreateAuditLog(input: AuditEventInput): Promise<void> {
+    if (!isMutationMethod(input.method) || !input.userId) {
+        return
+    }
+
+    const entityId = extractIdFromUrl(input.endpoint)
+    if (entityId === null) {
+        return
+    }
+
+    const metadata: Record<string, unknown> = {
+        correlationId: input.correlationId,
+        ipAddress: input.clientIp,
+        userAgent: input.userAgent,
+    }
+
+    if (typeof input.responseStatus === 'number') {
+        metadata.statusCode = input.responseStatus
+    }
+
+    try {
+        await createAuditLog({
+            userId: input.userId,
+            action: getAuditAction(input.method),
+            entity: input.entity,
+            entityId,
+            status: input.status,
+            errorMessage: input.errorMessage,
+            metadata,
+        })
+    } catch (auditError) {
+        console.error('[Endpoint] Failed to create audit log:', auditError, {
+            correlationId: input.correlationId,
+            endpoint: input.endpoint,
+            status: input.status,
+        })
+    }
+}
+
+function applyHeaders(response: NextResponse, headers: Headers): void {
+    headers.forEach((value, key) => {
+        response.headers.set(key, value)
+    })
+}
+
 function getAuditAction(method: string): AuditAction {
     if (method === 'POST') return AuditAction.CREATE
     if (method === 'DELETE') return AuditAction.DELETE
     return AuditAction.UPDATE
 }
 
-function extractIdFromUrl(url: string): string {
+function extractIdFromUrl(url: string): bigint | null {
     const regex = /\/(\d+)(?:\/|$)/
     const match = regex.exec(url)
-    return match?.[1] || 'unknown'
+    return match?.[1] ? BigInt(match[1]) : null
 }

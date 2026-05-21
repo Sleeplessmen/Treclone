@@ -1,3 +1,16 @@
+import { NextResponse } from 'next/server';
+
+export function responseJson(obj: any, status = 200) {
+    return NextResponse.json(obj, { status });
+}
+
+export const ok = (data: any) => responseJson(successResponse(data), 200);
+export const created = (data: any) => responseJson(successResponse(data), 201);
+export const badRequest = (msg = 'Bad Request') =>
+    responseJson(errorResponse(msg, 400), 400);
+export const unauthorized = (msg = 'Unauthorized') =>
+    responseJson(errorResponse(msg, 401), 401);
+
 export interface ApiResponse<T> {
     success: boolean
     data?: T
@@ -35,7 +48,7 @@ export function convertBigIntToString(obj: any): any {
 }
 
 /**
- * Returns a plain object (not a Response)
+ * Returns a plain object
  * Controller wraps this in NextResponse.json()
  */
 export function successResponse<T>(data: T) {
@@ -47,7 +60,7 @@ export function successResponse<T>(data: T) {
 }
 
 /**
- * Returns a plain object (not a Response)
+ * Returns a plain object
  * Controller wraps this in NextResponse.json()
  */
 export function errorResponse(error: string, status: number = 400) {
