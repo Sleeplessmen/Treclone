@@ -180,12 +180,18 @@ async function safeCreateAuditLog(input: AuditEventInput): Promise<void> {
         return
     }
 
-    const metadata: Record<string, unknown> = {
+    const metadata = {
         correlationId: input.correlationId,
         ipAddress: input.clientIp,
-        userAgent: input.userAgent,
+        ...(input.userAgent ? { userAgent: input.userAgent } : {}),
+        ...(typeof input.responseStatus === 'number'
+            ? { statusCode: input.responseStatus }
+            : {}),
     }
 
+    if (input.userAgent) {
+        metadata.userAgent = input.userAgent
+    }
     if (typeof input.responseStatus === 'number') {
         metadata.statusCode = input.responseStatus
     }
