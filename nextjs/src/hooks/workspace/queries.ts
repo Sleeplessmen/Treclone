@@ -2,20 +2,6 @@
 
 import { useQuery } from '@tanstack/react-query'
 
-interface WorkspaceMember {
-    id: string
-    userId: string
-    workspaceId: string
-    role: 'owner' | 'admin' | 'member'
-    user: {
-        id: string
-        email: string
-        name: string
-    }
-    createdAt: string
-    updatedAt: string
-}
-
 interface WorkspaceSettings {
     id: string
     workspaceId: string
@@ -45,16 +31,6 @@ interface FetchWorkspacesResponse {
 interface FetchWorkspaceResponse {
     success: boolean
     data: Workspace
-}
-
-interface FetchWorkspaceMembersResponse {
-    success: boolean
-    data: WorkspaceMember[]
-}
-
-interface FetchWorkspaceMemberResponse {
-    success: boolean
-    data: WorkspaceMember
 }
 
 interface FetchWorkspaceSettingsResponse {
@@ -108,65 +84,6 @@ export function useWorkspace(workspaceId: string) {
             return json.data
         },
         enabled: !!workspaceId,
-    })
-}
-
-// Fetch workspace members
-export function useWorkspaceMembers(workspaceId: string) {
-    return useQuery<FetchWorkspaceMembersResponse, Error>({
-        queryKey: ['workspace-members', workspaceId],
-        queryFn: async () => {
-            const response = await fetch(
-                `/api/workspaces/${workspaceId}/members`,
-                {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                }
-            )
-
-            if (!response.ok) {
-                const error = await response.json()
-                throw new Error(
-                    error.message || 'Failed to fetch workspace members'
-                )
-            }
-
-            return response.json()
-        },
-        enabled: !!workspaceId,
-    })
-}
-
-// Fetch single workspace member
-export function useWorkspaceMember(
-    workspaceId: string,
-    memberId: string
-) {
-    return useQuery<FetchWorkspaceMemberResponse, Error>({
-        queryKey: ['workspace-member', workspaceId, memberId],
-        queryFn: async () => {
-            const response = await fetch(
-                `/api/workspaces/${workspaceId}/members/${memberId}`,
-                {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                }
-            )
-
-            if (!response.ok) {
-                const error = await response.json()
-                throw new Error(error.message || 'Failed to fetch workspace member')
-            }
-
-            return response.json()
-        },
-        enabled: !!workspaceId && !!memberId,
     })
 }
 

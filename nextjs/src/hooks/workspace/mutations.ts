@@ -14,18 +14,6 @@ interface WorkspaceResponse {
     }
 }
 
-interface WorkspaceMemberResponse {
-    success: boolean
-    data: {
-        id: string
-        userId: string
-        workspaceId: string
-        role: 'owner' | 'admin' | 'member'
-        createdAt: string
-        updatedAt: string
-    }
-}
-
 interface WorkspaceSettingsResponse {
     success: boolean
     data: {
@@ -46,15 +34,6 @@ interface CreateWorkspaceInput {
 interface UpdateWorkspaceInput {
     name?: string
     description?: string
-}
-
-interface AddWorkspaceMemberInput {
-    userId: string
-    role?: 'admin' | 'member'
-}
-
-interface UpdateWorkspaceMemberInput {
-    role: 'owner' | 'admin' | 'member'
 }
 
 interface UpdateWorkspaceSettingsInput {
@@ -142,125 +121,6 @@ export function useDeleteWorkspace(workspaceId: string) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['workspaces'] })
-        },
-    })
-}
-
-// Add workspace member
-export function useAddWorkspaceMember(workspaceId: string) {
-    const queryClient = useQueryClient()
-
-    return useMutation<
-        WorkspaceMemberResponse,
-        Error,
-        AddWorkspaceMemberInput
-    >({
-        mutationFn: async (data) => {
-            const response = await fetch(
-                `/api/workspaces/${workspaceId}/members`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify(data),
-                }
-            )
-
-            if (!response.ok) {
-                const error = await response.json()
-                throw new Error(error.message || 'Failed to add workspace member')
-            }
-
-            return response.json()
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ['workspace-members', workspaceId],
-            })
-        },
-    })
-}
-
-// Update workspace member
-export function useUpdateWorkspaceMember(
-    workspaceId: string,
-    memberId: string
-) {
-    const queryClient = useQueryClient()
-
-    return useMutation<
-        WorkspaceMemberResponse,
-        Error,
-        UpdateWorkspaceMemberInput
-    >({
-        mutationFn: async (data) => {
-            const response = await fetch(
-                `/api/workspaces/${workspaceId}/members/${memberId}`,
-                {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify(data),
-                }
-            )
-
-            if (!response.ok) {
-                const error = await response.json()
-                throw new Error(
-                    error.message || 'Failed to update workspace member'
-                )
-            }
-
-            return response.json()
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ['workspace-members', workspaceId],
-            })
-            queryClient.invalidateQueries({
-                queryKey: ['workspace-member', workspaceId, memberId],
-            })
-        },
-    })
-}
-
-// Remove workspace member
-export function useRemoveWorkspaceMember(
-    workspaceId: string,
-    memberId: string
-) {
-    const queryClient = useQueryClient()
-
-    return useMutation({
-        mutationFn: async () => {
-            const response = await fetch(
-                `/api/workspaces/${workspaceId}/members/${memberId}`,
-                {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                }
-            )
-
-            if (!response.ok) {
-                const error = await response.json()
-                throw new Error(
-                    error.message || 'Failed to remove workspace member'
-                )
-            }
-
-            return response.json()
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ['workspace-members', workspaceId],
-            })
         },
     })
 }

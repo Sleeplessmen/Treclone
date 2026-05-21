@@ -1,8 +1,8 @@
 export * from './auth'
 export * from './profile'
 export * from './workspace'
+export * from './workspace-members'
 export * from './boards'
+export * from './board-members'
 export * from './lists'
 export * from './cards'
-export * from './members'
-

@@ -2,36 +2,23 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-interface BoardMemberResponse {
-    success: boolean
-    data: {
-        id: string
-        userId: string
-        boardId: string
-        role: 'admin' | 'editor' | 'viewer'
-        createdAt: string
-        updatedAt: string
-    }
-}
-
-interface AddBoardMemberInput {
+interface AddMemberInput {
     userId: string
-    role?: 'admin' | 'editor' | 'viewer'
-}
-
-interface UpdateBoardMemberInput {
     role: 'admin' | 'editor' | 'viewer'
 }
 
-// Add board member
+interface UpdateMemberInput {
+    role: 'admin' | 'editor' | 'viewer'
+}
+
 export function useAddBoardMember(
     workspaceId: string,
     boardId: string
 ) {
     const queryClient = useQueryClient()
 
-    return useMutation<BoardMemberResponse, Error, AddBoardMemberInput>({
-        mutationFn: async (data) => {
+    return useMutation({
+        mutationFn: async (data: AddMemberInput) => {
             const response = await fetch(
                 `/api/workspaces/${workspaceId}/boards/${boardId}/members`,
                 {
@@ -52,14 +39,11 @@ export function useAddBoardMember(
             return response.json()
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ['board-members', workspaceId, boardId],
-            })
+            queryClient.invalidateQueries({ queryKey: ['board-members', workspaceId, boardId] })
         },
     })
 }
 
-// Update board member
 export function useUpdateBoardMember(
     workspaceId: string,
     boardId: string,
@@ -67,8 +51,8 @@ export function useUpdateBoardMember(
 ) {
     const queryClient = useQueryClient()
 
-    return useMutation<BoardMemberResponse, Error, UpdateBoardMemberInput>({
-        mutationFn: async (data) => {
+    return useMutation({
+        mutationFn: async (data: UpdateMemberInput) => {
             const response = await fetch(
                 `/api/workspaces/${workspaceId}/boards/${boardId}/members/${memberId}`,
                 {
@@ -89,17 +73,11 @@ export function useUpdateBoardMember(
             return response.json()
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ['board-members', workspaceId, boardId],
-            })
-            queryClient.invalidateQueries({
-                queryKey: ['board-member', workspaceId, boardId, memberId],
-            })
+            queryClient.invalidateQueries({ queryKey: ['board-members', workspaceId, boardId] })
         },
     })
 }
 
-// Remove board member
 export function useRemoveBoardMember(
     workspaceId: string,
     boardId: string,
@@ -128,9 +106,7 @@ export function useRemoveBoardMember(
             return response.json()
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ['board-members', workspaceId, boardId],
-            })
+            queryClient.invalidateQueries({ queryKey: ['board-members', workspaceId, boardId] })
         },
     })
 }
