@@ -4,6 +4,8 @@ import * as jwt from 'jsonwebtoken';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { JWT_SECRET } from '@/lib/utils/auth';
+import { captureException } from '@/lib/utils/error-tracking';
+import { LayoutGrid, Users, BarChart2 } from 'lucide-react';
 
 export default async function MarketingHomePage() {
   const cookieStore = await cookies();
@@ -12,9 +14,10 @@ export default async function MarketingHomePage() {
   if (token) {
     try {
       jwt.verify(token, JWT_SECRET);
-      redirect('/boards');
-    } catch {
-      // Invalid or expired token, show the public landing page
+      redirect('/workspaces');
+    } catch (err) {
+      captureException(err, { page: 'marketing', action: 'verify-cookie' });
+      redirect('/api/auth/clear-token');
     }
   }
 
@@ -24,11 +27,11 @@ export default async function MarketingHomePage() {
       <section className="bg-surface-1 py-gap-xl px-gap-md">
         <div className="max-w-4xl mx-auto text-center space-y-gap-md">
           <h1 className="text-5xl font-heading font-bold text-ink leading-tight">
-            Treclone mang tất cả nhiệm vụ lại với nhau
+            Treclone — Tổ chức công việc, hoàn thành mục tiêu
           </h1>
           <p className="text-title-md text-ink-muted max-w-2xl mx-auto">
-            Quản lý dự án, tổ chức công việc và cộng tác với đội ngũ của bạn một
-            cách dễ dàng.
+            Quản lý dự án, sắp xếp nhiệm vụ và cộng tác cùng đội ngũ — mọi thứ
+            bạn cần để làm việc hiệu quả đều ở một chỗ.
           </p>
           <div className="flex gap-gap-md justify-center pt-gap-md">
             <Link href="/register">
@@ -49,30 +52,39 @@ export default async function MarketingHomePage() {
           </h2>
           <div className="grid md:grid-cols-3 gap-gap-lg">
             <div className="bg-surface-2 rounded-sm p-gap-md space-y-gap-sm">
-              <div className="w-12 h-12 bg-primary rounded-sm" />
+              <div className="w-12 h-12 bg-primary/10 rounded-sm flex items-center justify-center">
+                <LayoutGrid className="h-6 w-6 text-primary" />
+              </div>{' '}
               <h3 className="text-title-md font-heading text-ink">
-                Quản lý dễ dàng
+                Quản lý trực quan{' '}
               </h3>
               <p className="text-body text-ink-muted">
-                Drag and drop các thẻ để sắp xếp công việc một cách trực quan
+                Kéo thả thẻ, sắp xếp danh sách và theo dõi tiến độ công việc một
+                cách trực quan, dễ nắm bắt.{' '}
               </p>
             </div>
             <div className="bg-surface-2 rounded-sm p-gap-md space-y-gap-sm">
-              <div className="w-12 h-12 bg-primary rounded-sm" />
+              <div className="w-12 h-12 bg-primary/10 rounded-sm flex items-center justify-center">
+                <Users className="h-6 w-6 text-primary" />
+              </div>{' '}
               <h3 className="text-title-md font-heading text-ink">
                 Cộng tác nhóm
               </h3>
               <p className="text-body text-ink-muted">
-                Chia sẻ bảng với đội ngũ và làm việc cùng nhau thời gian thực
+                Chia sẻ bảng, giao nhiệm vụ và trao đổi với đồng đội để đẩy
+                nhanh tiến độ.
               </p>
             </div>
             <div className="bg-surface-2 rounded-sm p-gap-md space-y-gap-sm">
-              <div className="w-12 h-12 bg-primary rounded-sm" />
+              <div className="w-12 h-12 bg-primary/10 rounded-sm flex items-center justify-center">
+                <BarChart2 className="h-6 w-6 text-primary" />
+              </div>{' '}
               <h3 className="text-title-md font-heading text-ink">
-                Theo dõi tiến độ
+                Theo dõi và báo cáo{' '}
               </h3>
               <p className="text-body text-ink-muted">
-                Xem trạng thái công việc và quản lý deadline một cách hiệu quả
+                Theo dõi trạng thái công việc, lịch sử hoạt động và báo cáo tiến
+                độ dễ dàng.
               </p>
             </div>
           </div>
@@ -86,7 +98,8 @@ export default async function MarketingHomePage() {
             Sẵn sàng bắt đầu?
           </h2>
           <p className="text-body text-ink-muted">
-            Tạo tài khoản miễn phí ngay hôm nay và bắt đầu quản lý dự án của bạn
+            Tạo tài khoản miễn phí ngay — quản lý công việc hiệu quả hơn từ hôm
+            nay.{' '}
           </p>
           <Link href="/register" className="block">
             <Button variant="default" size="lg">
