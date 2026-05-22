@@ -10,8 +10,16 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUpdateCard, useDeleteCard } from '@/hooks/cards';
 import { useBoardMembers } from '@/hooks/board-members';
-import { updateCardSchema, type UpdateCardInput } from '@/lib/validation/card';
 import { AlertCircle, Loader2 } from 'lucide-react';
+import { z } from 'zod';
+
+const updateCardFormSchema = z.object({
+  title: z.string().min(1, 'Card title is required').max(255).optional(),
+  description: z.string().max(1000).optional(),
+  assigneeUserId: z.string().optional(),
+});
+
+type UpdateCardFormInput = z.infer<typeof updateCardFormSchema>;
 
 interface CardDetailFormProps {
   workspaceId: string;
@@ -27,16 +35,6 @@ interface CardDetailFormProps {
   };
   onSuccess?: () => void;
   onCancel?: () => void;
-}
-
-function toBigIntOrUndefined(value?: string) {
-  if (!value) return undefined;
-
-  try {
-    return BigInt(value);
-  } catch {
-    return undefined;
-  }
 }
 
 export function CardDetailForm({
@@ -72,12 +70,12 @@ export function CardDetailForm({
     setValue,
     watch,
     reset,
-  } = useForm<UpdateCardInput>({
-    resolver: zodResolver(updateCardSchema),
+  } = useForm<UpdateCardFormInput>({
+    resolver: zodResolver(updateCardFormSchema),
     defaultValues: {
       title: card.title,
       description: card.description || '',
-      assigneeUserId: toBigIntOrUndefined(card.assigneeId),
+      assigneeUserId: card.assigneeId || '',
     },
   });
 
@@ -85,14 +83,14 @@ export function CardDetailForm({
     reset({
       title: card.title,
       description: card.description || '',
-      assigneeUserId: toBigIntOrUndefined(card.assigneeId),
+      assigneeUserId: card.assigneeId || '',
     });
     setShowDeleteConfirm(false);
   }, [card, reset]);
 
   const assigneeId = watch('assigneeUserId');
   const members = Array.isArray(membersData?.data) ? membersData.data : [];
-  const onSubmit = (formData: UpdateCardInput) => {
+  const onSubmit = (formData: UpdateCardFormInput) => {
     updateMutation.mutate(formData, {
       onSuccess: () => {
         onSuccess?.();
@@ -174,18 +172,14 @@ export function CardDetailForm({
                   className="w-full px-gap-md py-gap-sm border border-hairline-ghost rounded-sm text-body font-body disabled:opacity-50"
                   value={assigneeId?.toString() || ''}
                   onChange={(e) => {
-                    if (e.target.value) {
-                      setValue('assigneeUserId', BigInt(e.target.value));
-                    } else {
-                      setValue('assigneeUserId', undefined);
-                    }
+                    setValue('assigneeUserId', e.target.value);
                   }}
                   disabled={isLoading}
                 >
                   <option value="">Unassigned</option>
                   {members.map((member) => (
                     <option key={member.userId} value={member.userId}>
-                      {member.user.name}
+                      {member.user.fullName}
                     </option>
                   ))}
                 </select>

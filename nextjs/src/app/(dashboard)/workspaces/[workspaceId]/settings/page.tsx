@@ -19,7 +19,7 @@ import { useDeleteWorkspace } from '@/hooks/workspace';
 import {
   updateWorkspaceSettingsSchema,
   type UpdateWorkspaceSettingsInput,
-} from '@/lib/validation/workspace';
+} from '@/lib/validation/workspace-settings';
 import { ArrowLeft, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
