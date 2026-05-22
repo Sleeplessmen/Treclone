@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -211,62 +212,33 @@ export function CardDetailForm({
         </CardContent>
       </Card>
 
-      {!showDeleteConfirm && (
-        <Card className="border-destructive/20">
-          <CardHeader>
-            <CardTitle className="text-destructive">Delete Card</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-label-sm text-ink-muted mb-gap-md">
-              This action cannot be undone. The card will be permanently
-              deleted.
-            </p>
-            <Button
-              variant="destructive"
-              onClick={() => setShowDeleteConfirm(true)}
-              disabled={isLoading}
-            >
-              Delete Card
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+      <Card className="border-destructive/20">
+        <CardHeader>
+          <CardTitle className="text-destructive">Delete Card</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-label-sm text-ink-muted mb-gap-md">
+            This action cannot be undone. The card will be permanently deleted.
+          </p>
+          <Button
+            variant="destructive"
+            onClick={() => setShowDeleteConfirm(true)}
+            disabled={isLoading}
+          >
+            Delete Card
+          </Button>
+        </CardContent>
+      </Card>
 
-      {showDeleteConfirm && (
-        <Card className="border-destructive">
-          <CardHeader>
-            <CardTitle className="text-destructive">
-              Confirm Delete Card?
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-gap-lg">
-            <p className="text-body text-ink">
-              Are you absolutely sure? This action cannot be undone.
-            </p>
-            <div className="flex gap-gap-md">
-              <Button
-                variant="outline"
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={isLoading}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleDelete}
-                disabled={isLoading}
-                className="flex-1 flex items-center justify-center gap-gap-sm"
-              >
-                {deleteMutation.isPending && (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                )}
-                Delete Card
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete Card"
+        description={`Delete "${card.title}"? This action cannot be undone.`}
+        confirmLabel="Delete Card"
+        isLoading={deleteMutation.isPending}
+        onOpenChange={setShowDeleteConfirm}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

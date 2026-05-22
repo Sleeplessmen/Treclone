@@ -528,10 +528,6 @@ export type WorkspaceUncheckedUpdateManyWithoutOwnerNestedInput = {
   deleteMany?: Prisma.WorkspaceScalarWhereInput | Prisma.WorkspaceScalarWhereInput[]
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type WorkspaceCreateNestedOneWithoutBoardsInput = {
   create?: Prisma.XOR<Prisma.WorkspaceCreateWithoutBoardsInput, Prisma.WorkspaceUncheckedCreateWithoutBoardsInput>
   connectOrCreate?: Prisma.WorkspaceCreateOrConnectWithoutBoardsInput

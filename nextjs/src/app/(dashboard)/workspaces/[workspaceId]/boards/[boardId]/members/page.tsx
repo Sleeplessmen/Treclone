@@ -9,6 +9,7 @@ import {
 } from '@/hooks/board-members';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -201,30 +202,47 @@ function BoardMemberRow({
   onRemove: () => void;
   isRemoving?: boolean;
 }>) {
+  const [showConfirm, setShowConfirm] = useState(false);
+
   return (
-    <div className="flex items-center justify-between gap-gap-md rounded-sm bg-surface-1 p-gap-md">
-      <div className="min-w-0">
-        <p className="text-body font-medium text-ink">
-          {member.user.fullName || member.user.email}
-        </p>
-        <p className="text-label-sm text-ink-muted">{member.user.email}</p>
-        <p className="text-label-sm text-ink-muted">
-          Joined {new Date(member.joinedAt).toLocaleDateString()}
-        </p>
-      </div>
+    <>
+      <div className="flex items-center justify-between gap-gap-md rounded-sm bg-surface-1 p-gap-md">
+        <div className="min-w-0">
+          <p className="text-body font-medium text-ink">
+            {member.user.fullName || member.user.email}
+          </p>
+          <p className="text-label-sm text-ink-muted">{member.user.email}</p>
+          <p className="text-label-sm text-ink-muted">
+            Joined {new Date(member.joinedAt).toLocaleDateString()}
+          </p>
+        </div>
 
-      <div className="flex items-center gap-gap-sm">
-        <Badge variant="secondary">{member.role}</Badge>
+        <div className="flex items-center gap-gap-sm">
+          <Badge variant="secondary">{member.role}</Badge>
 
-        <button
-          className="rounded-sm p-gap-sm text-destructive hover:bg-destructive/5"
-          onClick={onRemove}
-          disabled={isRemoving}
-          type="button"
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
+          <button
+            className="rounded-sm p-gap-sm text-destructive hover:bg-destructive/5"
+            onClick={() => setShowConfirm(true)}
+            disabled={isRemoving}
+            type="button"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
       </div>
-    </div>
+      <ConfirmDialog
+        open={showConfirm}
+        title="Remove Board Member"
+        description={`Remove ${member.user.email} from this board?`}
+        confirmLabel="Remove"
+        loadingLabel="Removing..."
+        isLoading={isRemoving}
+        onOpenChange={setShowConfirm}
+        onConfirm={() => {
+          onRemove();
+          setShowConfirm(false);
+        }}
+      />
+    </>
   );
 }

@@ -39,6 +39,8 @@ export type UserMinAggregateOutputType = {
   email: string | null
   passwordHash: string | null
   fullName: string | null
+  emailNotifications: boolean | null
+  darkMode: boolean | null
   passwordResetToken: string | null
   passwordResetExpires: Date | null
   createdAt: Date | null
@@ -50,6 +52,8 @@ export type UserMaxAggregateOutputType = {
   email: string | null
   passwordHash: string | null
   fullName: string | null
+  emailNotifications: boolean | null
+  darkMode: boolean | null
   passwordResetToken: string | null
   passwordResetExpires: Date | null
   createdAt: Date | null
@@ -61,6 +65,8 @@ export type UserCountAggregateOutputType = {
   email: number
   passwordHash: number
   fullName: number
+  emailNotifications: number
+  darkMode: number
   passwordResetToken: number
   passwordResetExpires: number
   createdAt: number
@@ -82,6 +88,8 @@ export type UserMinAggregateInputType = {
   email?: true
   passwordHash?: true
   fullName?: true
+  emailNotifications?: true
+  darkMode?: true
   passwordResetToken?: true
   passwordResetExpires?: true
   createdAt?: true
@@ -93,6 +101,8 @@ export type UserMaxAggregateInputType = {
   email?: true
   passwordHash?: true
   fullName?: true
+  emailNotifications?: true
+  darkMode?: true
   passwordResetToken?: true
   passwordResetExpires?: true
   createdAt?: true
@@ -104,6 +114,8 @@ export type UserCountAggregateInputType = {
   email?: true
   passwordHash?: true
   fullName?: true
+  emailNotifications?: true
+  darkMode?: true
   passwordResetToken?: true
   passwordResetExpires?: true
   createdAt?: true
@@ -202,6 +214,8 @@ export type UserGroupByOutputType = {
   email: string
   passwordHash: string
   fullName: string
+  emailNotifications: boolean
+  darkMode: boolean
   passwordResetToken: string | null
   passwordResetExpires: Date | null
   createdAt: Date
@@ -236,6 +250,8 @@ export type UserWhereInput = {
   email?: Prisma.StringFilter<"User"> | string
   passwordHash?: Prisma.StringFilter<"User"> | string
   fullName?: Prisma.StringFilter<"User"> | string
+  emailNotifications?: Prisma.BoolFilter<"User"> | boolean
+  darkMode?: Prisma.BoolFilter<"User"> | boolean
   passwordResetToken?: Prisma.StringNullableFilter<"User"> | string | null
   passwordResetExpires?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -255,6 +271,8 @@ export type UserOrderByWithRelationInput = {
   email?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
   fullName?: Prisma.SortOrder
+  emailNotifications?: Prisma.SortOrder
+  darkMode?: Prisma.SortOrder
   passwordResetToken?: Prisma.SortOrderInput | Prisma.SortOrder
   passwordResetExpires?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -278,6 +296,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   passwordHash?: Prisma.StringFilter<"User"> | string
   fullName?: Prisma.StringFilter<"User"> | string
+  emailNotifications?: Prisma.BoolFilter<"User"> | boolean
+  darkMode?: Prisma.BoolFilter<"User"> | boolean
   passwordResetExpires?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -296,6 +316,8 @@ export type UserOrderByWithAggregationInput = {
   email?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
   fullName?: Prisma.SortOrder
+  emailNotifications?: Prisma.SortOrder
+  darkMode?: Prisma.SortOrder
   passwordResetToken?: Prisma.SortOrderInput | Prisma.SortOrder
   passwordResetExpires?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -315,6 +337,8 @@ export type UserScalarWhereWithAggregatesInput = {
   email?: Prisma.StringWithAggregatesFilter<"User"> | string
   passwordHash?: Prisma.StringWithAggregatesFilter<"User"> | string
   fullName?: Prisma.StringWithAggregatesFilter<"User"> | string
+  emailNotifications?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
+  darkMode?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   passwordResetToken?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   passwordResetExpires?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -326,6 +350,8 @@ export type UserCreateInput = {
   email: string
   passwordHash: string
   fullName: string
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: string | null
   passwordResetExpires?: Date | string | null
   createdAt?: Date | string
@@ -345,6 +371,8 @@ export type UserUncheckedCreateInput = {
   email: string
   passwordHash: string
   fullName: string
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: string | null
   passwordResetExpires?: Date | string | null
   createdAt?: Date | string
@@ -364,6 +392,8 @@ export type UserUpdateInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  darkMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -383,6 +413,8 @@ export type UserUncheckedUpdateInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  darkMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -402,6 +434,8 @@ export type UserCreateManyInput = {
   email: string
   passwordHash: string
   fullName: string
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: string | null
   passwordResetExpires?: Date | string | null
   createdAt?: Date | string
@@ -413,6 +447,8 @@ export type UserUpdateManyMutationInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  darkMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -424,6 +460,8 @@ export type UserUncheckedUpdateManyInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  darkMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -435,6 +473,8 @@ export type UserCountOrderByAggregateInput = {
   email?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
   fullName?: Prisma.SortOrder
+  emailNotifications?: Prisma.SortOrder
+  darkMode?: Prisma.SortOrder
   passwordResetToken?: Prisma.SortOrder
   passwordResetExpires?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -450,6 +490,8 @@ export type UserMaxOrderByAggregateInput = {
   email?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
   fullName?: Prisma.SortOrder
+  emailNotifications?: Prisma.SortOrder
+  darkMode?: Prisma.SortOrder
   passwordResetToken?: Prisma.SortOrder
   passwordResetExpires?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -461,6 +503,8 @@ export type UserMinOrderByAggregateInput = {
   email?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
   fullName?: Prisma.SortOrder
+  emailNotifications?: Prisma.SortOrder
+  darkMode?: Prisma.SortOrder
   passwordResetToken?: Prisma.SortOrder
   passwordResetExpires?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -491,6 +535,10 @@ export type BigIntFieldUpdateOperationsInput = {
 
 export type StringFieldUpdateOperationsInput = {
   set?: string
+}
+
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
 }
 
 export type NullableStringFieldUpdateOperationsInput = {
@@ -624,6 +672,8 @@ export type UserCreateWithoutOwnedWorkspacesInput = {
   email: string
   passwordHash: string
   fullName: string
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: string | null
   passwordResetExpires?: Date | string | null
   createdAt?: Date | string
@@ -642,6 +692,8 @@ export type UserUncheckedCreateWithoutOwnedWorkspacesInput = {
   email: string
   passwordHash: string
   fullName: string
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: string | null
   passwordResetExpires?: Date | string | null
   createdAt?: Date | string
@@ -676,6 +728,8 @@ export type UserUpdateWithoutOwnedWorkspacesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  darkMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -694,6 +748,8 @@ export type UserUncheckedUpdateWithoutOwnedWorkspacesInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  darkMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -712,6 +768,8 @@ export type UserCreateWithoutOwnedBoardsInput = {
   email: string
   passwordHash: string
   fullName: string
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: string | null
   passwordResetExpires?: Date | string | null
   createdAt?: Date | string
@@ -730,6 +788,8 @@ export type UserUncheckedCreateWithoutOwnedBoardsInput = {
   email: string
   passwordHash: string
   fullName: string
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: string | null
   passwordResetExpires?: Date | string | null
   createdAt?: Date | string
@@ -764,6 +824,8 @@ export type UserUpdateWithoutOwnedBoardsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  darkMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -782,6 +844,8 @@ export type UserUncheckedUpdateWithoutOwnedBoardsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  darkMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -800,6 +864,8 @@ export type UserCreateWithoutAssignedCardsInput = {
   email: string
   passwordHash: string
   fullName: string
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: string | null
   passwordResetExpires?: Date | string | null
   createdAt?: Date | string
@@ -818,6 +884,8 @@ export type UserUncheckedCreateWithoutAssignedCardsInput = {
   email: string
   passwordHash: string
   fullName: string
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: string | null
   passwordResetExpires?: Date | string | null
   createdAt?: Date | string
@@ -841,6 +909,8 @@ export type UserCreateWithoutCreatedCardsInput = {
   email: string
   passwordHash: string
   fullName: string
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: string | null
   passwordResetExpires?: Date | string | null
   createdAt?: Date | string
@@ -859,6 +929,8 @@ export type UserUncheckedCreateWithoutCreatedCardsInput = {
   email: string
   passwordHash: string
   fullName: string
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: string | null
   passwordResetExpires?: Date | string | null
   createdAt?: Date | string
@@ -893,6 +965,8 @@ export type UserUpdateWithoutAssignedCardsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  darkMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -911,6 +985,8 @@ export type UserUncheckedUpdateWithoutAssignedCardsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  darkMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -940,6 +1016,8 @@ export type UserUpdateWithoutCreatedCardsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  darkMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -958,6 +1036,8 @@ export type UserUncheckedUpdateWithoutCreatedCardsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  darkMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -976,6 +1056,8 @@ export type UserCreateWithoutRefreshTokensInput = {
   email: string
   passwordHash: string
   fullName: string
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: string | null
   passwordResetExpires?: Date | string | null
   createdAt?: Date | string
@@ -994,6 +1076,8 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   email: string
   passwordHash: string
   fullName: string
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: string | null
   passwordResetExpires?: Date | string | null
   createdAt?: Date | string
@@ -1028,6 +1112,8 @@ export type UserUpdateWithoutRefreshTokensInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  darkMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1046,6 +1132,8 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  darkMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1064,6 +1152,8 @@ export type UserCreateWithoutWorkspaceMembersInput = {
   email: string
   passwordHash: string
   fullName: string
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: string | null
   passwordResetExpires?: Date | string | null
   createdAt?: Date | string
@@ -1082,6 +1172,8 @@ export type UserUncheckedCreateWithoutWorkspaceMembersInput = {
   email: string
   passwordHash: string
   fullName: string
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: string | null
   passwordResetExpires?: Date | string | null
   createdAt?: Date | string
@@ -1116,6 +1208,8 @@ export type UserUpdateWithoutWorkspaceMembersInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  darkMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1134,6 +1228,8 @@ export type UserUncheckedUpdateWithoutWorkspaceMembersInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  darkMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1152,6 +1248,8 @@ export type UserCreateWithoutBoardMembersInput = {
   email: string
   passwordHash: string
   fullName: string
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: string | null
   passwordResetExpires?: Date | string | null
   createdAt?: Date | string
@@ -1170,6 +1268,8 @@ export type UserUncheckedCreateWithoutBoardMembersInput = {
   email: string
   passwordHash: string
   fullName: string
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: string | null
   passwordResetExpires?: Date | string | null
   createdAt?: Date | string
@@ -1204,6 +1304,8 @@ export type UserUpdateWithoutBoardMembersInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  darkMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1222,6 +1324,8 @@ export type UserUncheckedUpdateWithoutBoardMembersInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  darkMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1240,6 +1344,8 @@ export type UserCreateWithoutAuditLogsInput = {
   email: string
   passwordHash: string
   fullName: string
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: string | null
   passwordResetExpires?: Date | string | null
   createdAt?: Date | string
@@ -1258,6 +1364,8 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   email: string
   passwordHash: string
   fullName: string
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: string | null
   passwordResetExpires?: Date | string | null
   createdAt?: Date | string
@@ -1292,6 +1400,8 @@ export type UserUpdateWithoutAuditLogsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  darkMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1310,6 +1420,8 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  emailNotifications?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  darkMode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1422,6 +1534,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   email?: boolean
   passwordHash?: boolean
   fullName?: boolean
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: boolean
   passwordResetExpires?: boolean
   createdAt?: boolean
@@ -1442,6 +1556,8 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   email?: boolean
   passwordHash?: boolean
   fullName?: boolean
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: boolean
   passwordResetExpires?: boolean
   createdAt?: boolean
@@ -1453,6 +1569,8 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   email?: boolean
   passwordHash?: boolean
   fullName?: boolean
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: boolean
   passwordResetExpires?: boolean
   createdAt?: boolean
@@ -1464,13 +1582,15 @@ export type UserSelectScalar = {
   email?: boolean
   passwordHash?: boolean
   fullName?: boolean
+  emailNotifications?: boolean
+  darkMode?: boolean
   passwordResetToken?: boolean
   passwordResetExpires?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "fullName" | "passwordResetToken" | "passwordResetExpires" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "fullName" | "emailNotifications" | "darkMode" | "passwordResetToken" | "passwordResetExpires" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ownedWorkspaces?: boolean | Prisma.User$ownedWorkspacesArgs<ExtArgs>
   ownedBoards?: boolean | Prisma.User$ownedBoardsArgs<ExtArgs>
@@ -1502,6 +1622,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     email: string
     passwordHash: string
     fullName: string
+    emailNotifications: boolean
+    darkMode: boolean
     passwordResetToken: string | null
     passwordResetExpires: Date | null
     createdAt: Date
@@ -1941,6 +2063,8 @@ export interface UserFieldRefs {
   readonly email: Prisma.FieldRef<"User", 'String'>
   readonly passwordHash: Prisma.FieldRef<"User", 'String'>
   readonly fullName: Prisma.FieldRef<"User", 'String'>
+  readonly emailNotifications: Prisma.FieldRef<"User", 'Boolean'>
+  readonly darkMode: Prisma.FieldRef<"User", 'Boolean'>
   readonly passwordResetToken: Prisma.FieldRef<"User", 'String'>
   readonly passwordResetExpires: Prisma.FieldRef<"User", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>

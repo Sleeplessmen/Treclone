@@ -85,6 +85,8 @@ export const UserScalarFieldEnum = {
   email: 'email',
   passwordHash: 'passwordHash',
   fullName: 'fullName',
+  emailNotifications: 'emailNotifications',
+  darkMode: 'darkMode',
   passwordResetToken: 'passwordResetToken',
   passwordResetExpires: 'passwordResetExpires',
   createdAt: 'createdAt',
