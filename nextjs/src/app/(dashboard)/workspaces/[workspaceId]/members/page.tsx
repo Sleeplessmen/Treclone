@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import {
   useWorkspaceMembers,
   useAddWorkspaceMember,
+  useUpdateWorkspaceMember,
   useRemoveWorkspaceMember,
 } from '@/hooks/workspace-members';
 import { Button } from '@/components/ui/button';
@@ -40,7 +41,7 @@ export default function MembersPage() {
   };
 
   return (
-    <main className="max-w-4xl mx-auto space-y-gap-lg">
+    <main className="mx-auto max-w-4xl space-y-gap-lg px-gap-md py-gap-lg">
       <DashboardPageHeader
         title="Team Members"
         description="Manage workspace members and permissions"
@@ -66,22 +67,12 @@ export default function MembersPage() {
               onClick={handleAddMember}
               disabled={addMemberMutation.isPending}
             >
-              <UserPlus className="h-4 w-4 mr-gap-sm" />
+              <UserPlus className="mr-gap-sm h-4 w-4" />
               {addMemberMutation.isPending ? 'Adding...' : 'Add Member'}
             </Button>
           </div>
         }
       />
-
-      {error && (
-        <Card className="border-destructive bg-destructive/5">
-          <CardContent className="pt-gap-lg">
-            <p className="text-destructive text-body">
-              Failed to load members: {error.message}
-            </p>
-          </CardContent>
-        </Card>
-      )}
 
       <Card>
         <CardHeader>
@@ -89,16 +80,14 @@ export default function MembersPage() {
             {isLoading ? 'Loading...' : `${members.length} Members`}
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-gap-md">
-            {members.map((member) => (
-              <MemberRow
-                key={member.id}
-                workspaceId={workspaceId}
-                member={member}
-              />
-            ))}
-          </div>
+        <CardContent className="space-y-gap-md">
+          {members.map((member) => (
+            <MemberRow
+              key={member.id}
+              workspaceId={workspaceId}
+              member={member}
+            />
+          ))}
         </CardContent>
       </Card>
     </main>
@@ -123,29 +112,40 @@ function MemberRow({
   };
 }>) {
   const [showConfirm, setShowConfirm] = useState(false);
+  const updateMemberMutation = useUpdateWorkspaceMember(workspaceId, member.id);
   const removeMutation = useRemoveWorkspaceMember(workspaceId, member.id);
 
   return (
     <>
       <div className="flex flex-col gap-gap-md rounded-sm bg-surface-1 p-gap-md sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <p className="text-body text-ink font-medium">{member.user.name}</p>
+          <p className="text-body font-medium text-ink">{member.user.name}</p>
           <p className="text-label-sm text-ink-muted">{member.user.email}</p>
           <p className="text-label-sm text-ink-muted capitalize">
             {member.role}
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-gap-sm sm:justify-end">
-          <select
-            className="w-full rounded-sm border border-hairline-ghost px-gap-md py-gap-sm text-label-sm sm:w-auto"
-            defaultValue={member.role}
-            disabled
-          >
-            <option value="owner">Owner</option>
-            <option value="admin">Admin</option>
-            <option value="member">Member</option>
-          </select>
+        <div className="flex flex-col gap-gap-sm sm:flex-row sm:items-center">
+          {member.role === 'owner' ? (
+            <div className="rounded-sm bg-canvas px-gap-md py-gap-sm text-label-sm text-ink-muted">
+              Owner
+            </div>
+          ) : (
+            <select
+              className="w-full rounded-sm border border-hairline-ghost px-gap-md py-gap-sm text-label-sm sm:w-auto"
+              value={member.role}
+              disabled={updateMemberMutation.isPending}
+              onChange={(e) => {
+                updateMemberMutation.mutate({
+                  role: e.target.value as 'member' | 'admin',
+                });
+              }}
+            >
+              <option value="member">Member</option>
+              <option value="admin">Admin</option>
+            </select>
+          )}
 
           <button
             className="rounded-sm p-gap-sm text-destructive hover:bg-destructive/5"
@@ -153,10 +153,11 @@ function MemberRow({
             disabled={removeMutation.isPending || member.role === 'owner'}
             type="button"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="h-4 w-4" />
           </button>
         </div>
       </div>
+
       <ConfirmDialog
         open={showConfirm}
         title="Remove Member"

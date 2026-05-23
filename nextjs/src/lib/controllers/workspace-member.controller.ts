@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { successResponse, errorResponse, convertBigIntToString } from '@/lib/utils/api-utils'
+import {
+    successResponse,
+    errorResponse,
+    convertBigIntToString,
+} from '@/lib/utils/api-utils'
 import { WorkspaceMemberService } from '@/lib/services/workspace-member.service'
 import { handleAuthError } from '@/lib/utils/error-handler'
 
@@ -57,14 +61,44 @@ export class WorkspaceMemberController {
         }
     }
 
-    async removeMember(
+    async updateMember(
         request: NextRequest,
         workspaceId: bigint,
+        memberId: bigint,
         userId: bigint
     ) {
         try {
             const body = await request.json()
-            await this.service.removeMember(workspaceId, userId, body)
+            const member = await this.service.updateMemberRole(
+                workspaceId,
+                memberId,
+                userId,
+                body
+            )
+
+            return NextResponse.json(
+                successResponse({
+                    message: 'Member updated successfully',
+                    member: convertBigIntToString(member),
+                })
+            )
+        } catch (error) {
+            const authError = handleAuthError(error)
+            return NextResponse.json(
+                errorResponse(authError.message, authError.statusCode),
+                { status: authError.statusCode }
+            )
+        }
+    }
+
+    async removeMemberById(
+        request: NextRequest,
+        workspaceId: bigint,
+        memberId: bigint,
+        userId: bigint
+    ) {
+        try {
+            await this.service.removeMemberById(workspaceId, memberId, userId)
 
             return NextResponse.json(
                 successResponse({

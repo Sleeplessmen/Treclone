@@ -1,34 +1,37 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useWorkspaceActivities } from '@/hooks/workspace-activity';
 import { AlertCircle } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, format } from 'date-fns';
 import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
-
-interface Activity {
-  id: string;
-  user: string;
-  action: string;
-  target: string;
-  timestamp: string;
-}
 
 export default function ActivityPage() {
   const params = useParams();
   const workspaceId = params.workspaceId as string;
 
   const { data, isLoading, error } = useWorkspaceActivities(workspaceId);
-  const activities: Activity[] = data?.activities || [];
+  const activities = data?.activities || [];
+
+  const groupedActivities = useMemo(() => {
+    return activities.reduce<Record<string, typeof activities>>(
+      (groups, activity) => {
+        const key = format(new Date(activity.occurredAt), 'PP');
+        groups[key] ||= [];
+        groups[key].push(activity);
+        return groups;
+      },
+      {}
+    );
+  }, [activities]);
 
   if (isLoading) {
     return (
-      <main className="max-w-4xl mx-auto space-y-gap-lg">
-        <div className="flex flex-col gap-gap-sm md:flex-row md:items-start md:justify-between">
-          <Skeleton className="h-10 w-48" />
-        </div>
+      <main className="mx-auto max-w-4xl space-y-gap-lg px-gap-md py-gap-lg">
+        <Skeleton className="h-10 w-48" />
         <Card>
           <CardHeader>
             <Skeleton className="h-6 w-40" />
@@ -48,17 +51,17 @@ export default function ActivityPage() {
 
   if (error) {
     return (
-      <main className="max-w-4xl mx-auto space-y-gap-lg">
+      <main className="mx-auto max-w-4xl space-y-gap-lg px-gap-md py-gap-lg">
         <DashboardPageHeader title="Activity Log" />
         <Card className="border-destructive bg-destructive/5">
           <CardContent className="pt-gap-lg">
-            <div className="flex gap-gap-md items-start">
-              <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-gap-sm" />
+            <div className="flex items-start gap-gap-md">
+              <AlertCircle className="mt-gap-sm h-5 w-5 flex-shrink-0 text-destructive" />
               <div>
-                <p className="text-destructive text-body font-medium">
+                <p className="text-body font-medium text-destructive">
                   Failed to load activities
                 </p>
-                <p className="text-destructive text-label-sm">
+                <p className="text-label-sm text-destructive">
                   {error.message}
                 </p>
               </div>
@@ -70,39 +73,50 @@ export default function ActivityPage() {
   }
 
   return (
-    <main className="max-w-4xl mx-auto space-y-gap-lg">
+    <main className="mx-auto max-w-4xl space-y-gap-lg px-gap-md py-gap-lg">
       <DashboardPageHeader
         title="Activity Log"
-        description="Recent workspace activity, grouped by who did what and when."
+        description="Recent workspace activity with clear timestamps and grouped context."
       />
 
       <Card>
         <CardHeader>
           <CardTitle>Recent Activity</CardTitle>
         </CardHeader>
-        <CardContent>
-          {activities.length > 0 ? (
-            <div className="space-y-gap-md">
-              {activities.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="py-gap-md border-b border-hairline-ghost last:border-b-0"
-                >
-                  <p className="text-body text-ink">
-                    <span className="font-semibold">{activity.user}</span>
-                    {activity.action}
-                    <span className="text-primary">{activity.target}</span>
-                  </p>
-                  <p className="text-label-sm text-ink-muted">
-                    {formatDistanceToNow(new Date(activity.timestamp), {
-                      addSuffix: true,
-                    })}
-                  </p>
+        <CardContent className="space-y-gap-lg">
+          {Object.keys(groupedActivities).length > 0 ? (
+            Object.entries(groupedActivities).map(([day, dayActivities]) => (
+              <section key={day} className="space-y-gap-md">
+                <p className="text-label-sm font-semibold uppercase tracking-wide text-ink-muted">
+                  {day}
+                </p>
+
+                <div className="space-y-gap-md">
+                  {dayActivities.map((activity) => (
+                    <div
+                      key={activity.id}
+                      className="rounded-sm bg-surface-1 p-gap-md"
+                    >
+                      <p className="text-body text-ink">
+                        <span className="font-semibold">{activity.user}</span>{' '}
+                        {activity.summary}{' '}
+                        <span className="text-primary">{activity.target}</span>
+                      </p>
+                      <div className="mt-gap-xs flex flex-wrap gap-gap-sm text-label-sm text-ink-muted">
+                        <span>{activity.absoluteTime}</span>
+                        <span>
+                          {formatDistanceToNow(new Date(activity.occurredAt), {
+                            addSuffix: true,
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </section>
+            ))
           ) : (
-            <p className="text-body text-ink-muted text-center py-gap-lg">
+            <p className="py-gap-lg text-center text-body text-ink-muted">
               No activities yet
             </p>
           )}

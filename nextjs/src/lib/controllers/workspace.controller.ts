@@ -163,12 +163,8 @@ export class WorkspaceController {
         userId: bigint
     ) {
         try {
-            // Get workspace info before deletion
             const workspace = await this.service.getWorkspaceById(workspaceId, userId)
 
-            await this.service.deleteWorkspace(workspaceId, userId)
-
-            // Log the action
             await createAuditLog({
                 userId,
                 action: 'DELETE',
@@ -182,13 +178,14 @@ export class WorkspaceController {
                 },
             })
 
+            await this.service.deleteWorkspace(workspaceId, userId)
+
             return NextResponse.json(
                 successResponse({
                     message: 'Workspace deleted successfully',
                 })
             )
         } catch (error) {
-            // Log failure
             if (error instanceof Error) {
                 await createAuditLog({
                     userId,

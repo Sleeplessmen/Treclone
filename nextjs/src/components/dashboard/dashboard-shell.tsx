@@ -152,7 +152,7 @@ export function DashboardShell({
             <Input
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              placeholder="Search boards, tasks, members..."
+              placeholder="Search boards, lists, cards, ..."
               className="h-10 pl-10"
             />
           </div>

@@ -1,40 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyTokenFromCookie } from '@/lib/utils/auth';
-import { errorResponse, successResponse, unauthorized } from '@/lib/utils/api-utils';
+import { successResponse, unauthorized } from '@/lib/utils/api-utils';
 import prisma from '@/lib/db/prisma';
-
-interface ActivityDisplay {
-    id: string;
-    user: string;
-    action: string;
-    target: string;
-    timestamp: string;
-}
-
-interface AuditLogWithUser {
-    id: bigint;
-    action: string;
-    entity: string;
-    metadata: string | null;
-    createdAt: Date;
-    user: {
-        fullName: string;
-        email: string;
-    };
-}
-
-function parseMetadata(metadata: unknown): Record<string, unknown> | null {
-    if (!metadata) return null;
-    if (typeof metadata === 'object') return metadata as Record<string, unknown>;
-    if (typeof metadata === 'string') {
-        try {
-            return JSON.parse(metadata) as Record<string, unknown>;
-        } catch {
-            return null;
-        }
-    }
-    return null;
-}
+import { format } from 'date-fns';
 
 export async function GET(
     request: NextRequest,
@@ -47,109 +15,67 @@ export async function GET(
         return unauthorized();
     }
 
-    try {
-        const workspace = await prisma.workspace.findUnique({
-            where: { id: BigInt(workspaceId) },
-            select: { ownerId: true },
-        });
-
-        if (!workspace) {
-            return NextResponse.json(errorResponse('Workspace not found', 404), {
-                status: 404,
-            });
-        }
-
-        const isOwner = workspace.ownerId === BigInt(userId);
-        const member = isOwner ? null : await prisma.workspaceMember.findUnique({
-            where: {
-                userId_workspaceId: {
-                    userId: BigInt(userId),
-                    workspaceId: BigInt(workspaceId),
+    const auditLogs = await prisma.auditLog.findMany({
+        where: { workspaceId: BigInt(workspaceId) },
+        include: {
+            user: {
+                select: {
+                    fullName: true,
+                    email: true,
                 },
             },
-        });
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+    });
 
-        if (!isOwner && !member) {
-            return NextResponse.json(errorResponse('Access denied', 403), {
-                status: 403,
-            });
+    const activities = auditLogs.map((log) => {
+        const occurredAt = log.createdAt.toISOString();
+        const absoluteTime = format(log.createdAt, 'PPpp');
+
+        let summary = '';
+        let target = '';
+
+        const metadata = typeof log.metadata === 'string' ? JSON.parse(log.metadata || '{}') : {};
+
+        switch (log.entity) {
+            case 'BOARD':
+                summary = `${log.action.toLowerCase()} board`;
+                target = metadata.title || 'Unknown board';
+                break;
+            case 'CARD':
+                summary = `${log.action.toLowerCase()} card`;
+                target = metadata.title || 'Unknown card';
+                break;
+            case 'LIST':
+                summary = `${log.action.toLowerCase()} list`;
+                target = metadata.title || 'Unknown list';
+                break;
+            case 'MEMBER':
+                summary = `${log.action.toLowerCase()} member`;
+                target = metadata.email || 'Unknown member';
+                break;
+            default:
+                summary = log.action.toLowerCase();
+                target = 'Resource';
         }
 
-        const auditLogs = await prisma.auditLog.findMany({
-            where: {
-                workspaceId: BigInt(workspaceId),
-            },
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        fullName: true,
-                        email: true,
-                    },
-                },
-            },
-            orderBy: {
-                createdAt: 'desc',
-            },
-            take: 50,
-        });
+        return {
+            id: String(log.id),
+            user: log.user.fullName || log.user.email,
+            action: log.action,
+            target,
+            summary,
+            occurredAt,
+            absoluteTime,
+        };
+    });
 
-        const activities: ActivityDisplay[] = (auditLogs as AuditLogWithUser[]).map((log) => {
-            let action = '';
-            let target = '';
-            const metadata = parseMetadata(log.metadata);
-
-            switch (log.entity) {
-                case 'BOARD':
-                    action = `${log.action.toLowerCase()}ed board`;
-                    target =
-                        (metadata?.title as string | undefined) ||
-                        'Unknown';
-                    break;
-                case 'CARD':
-                    action = `${log.action.toLowerCase()}ed card`;
-                    target =
-                        (metadata?.title as string | undefined) ||
-                        'Unknown';
-                    break;
-                case 'LIST':
-                    action = `${log.action.toLowerCase()}ed list`;
-                    target =
-                        (metadata?.title as string | undefined) ||
-                        'Unknown';
-                    break;
-                case 'MEMBER':
-                    action = `${log.action.toLowerCase()} member`;
-                    target =
-                        (metadata?.email as string | undefined) ||
-                        'Unknown';
-                    break;
-                default:
-                    action = log.action.toLowerCase();
-                    target = 'Resource';
-            }
-
-            return {
-                id: log.id.toString(),
-                user: log.user.fullName || log.user.email,
-                action,
-                target,
-                timestamp: log.createdAt.toISOString(),
-            };
-        });
-
-        return NextResponse.json(
-            successResponse({
-                message: 'Activities fetched successfully',
-                activities,
-            }),
-            { status: 200 }
-        );
-    } catch (error) {
-        console.error('Failed to fetch activities:', error);
-        return NextResponse.json(
-            errorResponse('Failed to fetch activities', 500),
-            { status: 500 }
-        );
-    }
+    return NextResponse.json(
+        successResponse({
+            message: 'Activities fetched successfully',
+            activities,
+        }),
+        { status: 200 }
+    );
 }
