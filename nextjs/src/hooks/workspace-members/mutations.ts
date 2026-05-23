@@ -36,7 +36,9 @@ export function useAddWorkspaceMember(workspaceId: string) {
             return response.json()
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['workspace-members', workspaceId] })
+            queryClient.invalidateQueries({
+                queryKey: ['workspace-members', workspaceId],
+            })
         },
     })
 }
@@ -69,8 +71,12 @@ export function useUpdateWorkspaceMember(
             return response.json()
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['workspace-members', workspaceId] })
-            queryClient.invalidateQueries({ queryKey: ['workspace-member', workspaceId, memberId] })
+            queryClient.invalidateQueries({
+                queryKey: ['workspace-members', workspaceId],
+            })
+            queryClient.invalidateQueries({
+                queryKey: ['workspace-member', workspaceId, memberId],
+            })
         },
     })
 }
@@ -102,7 +108,9 @@ export function useRemoveWorkspaceMember(
             return response.json()
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['workspace-members', workspaceId] })
+            queryClient.invalidateQueries({
+                queryKey: ['workspace-members', workspaceId],
+            })
         },
     })
 }

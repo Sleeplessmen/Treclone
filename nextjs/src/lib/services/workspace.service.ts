@@ -1,6 +1,7 @@
 import { WorkspaceRepository } from '@/lib/repositories/workspace.repository'
 import { createWorkspaceSchema, updateWorkspaceSchema } from '@/lib/validation/workspace'
 import { AuthError, AuthErrorCode } from '@/lib/utils/error-handler'
+import prisma from '@/lib/db/prisma'
 
 export class WorkspaceService {
     private readonly repository = new WorkspaceRepository()
@@ -22,12 +23,11 @@ export class WorkspaceService {
                 )
             }
 
-            // Verify user is owner
             if (workspace.ownerId !== userId) {
                 throw new AuthError(
                     'Forbidden - not the workspace owner',
                     403,
-                    AuthErrorCode.INVALID_CREDENTIALS
+                    AuthErrorCode.FORBIDDEN
                 )
             }
 
@@ -45,9 +45,26 @@ export class WorkspaceService {
     async createWorkspace(userId: bigint, credentials: unknown) {
         try {
             const validatedData = createWorkspaceSchema.parse(credentials)
+            const name = validatedData.name.trim()
+
+            const existingWorkspace = await prisma.workspace.findFirst({
+                where: {
+                    ownerId: userId,
+                    name,
+                },
+                select: { id: true },
+            })
+
+            if (existingWorkspace) {
+                throw new AuthError(
+                    'Workspace name already exists',
+                    409,
+                    AuthErrorCode.VALIDATION_ERROR
+                )
+            }
 
             const workspace = await this.repository.createWorkspace(userId, {
-                name: validatedData.name,
+                name,
                 description: validatedData.description,
             })
 
@@ -64,7 +81,6 @@ export class WorkspaceService {
 
     async updateWorkspace(workspaceId: bigint, userId: bigint, credentials: unknown) {
         try {
-            // Verify ownership first
             const workspace = await this.repository.getWorkspaceById(workspaceId)
 
             if (!workspace) {
@@ -79,17 +95,38 @@ export class WorkspaceService {
                 throw new AuthError(
                     'Forbidden - not the workspace owner',
                     403,
-                    AuthErrorCode.INVALID_CREDENTIALS
+                    AuthErrorCode.FORBIDDEN
                 )
             }
 
-            // Validate input
             const validatedData = updateWorkspaceSchema.parse(credentials)
 
-            const updateData: any = {}
+            const updateData: {
+                name?: string
+                description?: string
+            } = {}
 
-            if (validatedData.name) {
-                updateData.name = validatedData.name
+            if (validatedData.name !== undefined) {
+                const nextName = validatedData.name.trim()
+
+                const existingWorkspace = await prisma.workspace.findFirst({
+                    where: {
+                        ownerId: userId,
+                        name: nextName,
+                        id: { not: workspaceId },
+                    },
+                    select: { id: true },
+                })
+
+                if (existingWorkspace) {
+                    throw new AuthError(
+                        'Workspace name already exists',
+                        409,
+                        AuthErrorCode.VALIDATION_ERROR
+                    )
+                }
+
+                updateData.name = nextName
             }
 
             if (validatedData.description !== undefined) {
@@ -110,7 +147,6 @@ export class WorkspaceService {
 
     async deleteWorkspace(workspaceId: bigint, userId: bigint) {
         try {
-            // Verify ownership first
             const workspace = await this.repository.getWorkspaceById(workspaceId)
 
             if (!workspace) {
@@ -125,7 +161,7 @@ export class WorkspaceService {
                 throw new AuthError(
                     'Forbidden - not the workspace owner',
                     403,
-                    AuthErrorCode.INVALID_CREDENTIALS
+                    AuthErrorCode.FORBIDDEN
                 )
             }
 

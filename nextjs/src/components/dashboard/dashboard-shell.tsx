@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/auth/use-auth';
 import { useWorkspaces, useWorkspace } from '@/hooks/workspace';
+import { useBoard } from '@/hooks/boards';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -39,8 +40,10 @@ export function DashboardShell({
 
   const routeWorkspaceId =
     typeof params.workspaceId === 'string' ? params.workspaceId : '';
+  const routeBoardId = typeof params.boardId === 'string' ? params.boardId : '';
 
   const { data: routeWorkspace } = useWorkspace(routeWorkspaceId);
+  const { data: routeBoard } = useBoard(routeWorkspaceId, routeBoardId);
 
   const workspaces = workspacesData?.workspaces ?? [];
   const selectedWorkspace =
@@ -48,8 +51,13 @@ export function DashboardShell({
     workspaces.find((workspace) => workspace.id === routeWorkspaceId) ??
     workspaces[0];
 
-  const workspaceId = selectedWorkspace?.id ?? '';
-  const workspaceName = selectedWorkspace?.name ?? 'Select workspace';
+  // selected workspace id/name from list or fetched resource
+  const workspaceIdFromList = selectedWorkspace?.id ?? '';
+  const workspaceNameFromList = selectedWorkspace?.name ?? 'Select workspace';
+
+  // Use route param first (when present) so UI stays stable during async loads
+  const navWorkspaceId = routeWorkspaceId || workspaceIdFromList;
+  const navWorkspaceName = routeWorkspace?.name ?? workspaceNameFromList;
 
   const userInitial = useMemo(() => {
     return user?.fullName?.trim()?.charAt(0)?.toUpperCase() ?? '?';
@@ -67,25 +75,33 @@ export function DashboardShell({
   const desktopNavItems = [
     {
       id: 'boards',
-      href: workspaceId ? `/workspaces/${workspaceId}/boards` : '/workspaces',
+      href: navWorkspaceId
+        ? `/workspaces/${navWorkspaceId}/boards`
+        : '/workspaces',
       label: 'All boards',
       icon: LayoutGrid,
     },
     {
       id: 'starred',
-      href: workspaceId ? `/workspaces/${workspaceId}/starred` : '/workspaces',
+      href: navWorkspaceId
+        ? `/workspaces/${navWorkspaceId}/starred`
+        : '/workspaces',
       label: 'Starred',
       icon: Star,
     },
     {
       id: 'activity',
-      href: workspaceId ? `/workspaces/${workspaceId}/activity` : '/workspaces',
+      href: navWorkspaceId
+        ? `/workspaces/${navWorkspaceId}/activity`
+        : '/workspaces',
       label: 'Activity',
       icon: Activity,
     },
     {
       id: 'members',
-      href: workspaceId ? `/workspaces/${workspaceId}/members` : '/workspaces',
+      href: navWorkspaceId
+        ? `/workspaces/${navWorkspaceId}/members`
+        : '/workspaces',
       label: 'Team members',
       icon: Users,
     },
@@ -148,7 +164,7 @@ export function DashboardShell({
             <Input
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              placeholder="Search boards, tasks, members..."
+              placeholder="Search boards, lists, cards, ..."
               className="h-10 pl-10"
             />
           </div>
@@ -185,12 +201,14 @@ export function DashboardShell({
         </div>
       </header>
 
+      {/* Breadcrumbs disabled */}
+
       {/* Mobile Navigation */}
       <DashboardMobileNav
         open={isMobileNavOpen}
         onOpenChange={setIsMobileNavOpen}
-        workspaceId={workspaceId}
-        workspaceName={workspaceName}
+        workspaceId={navWorkspaceId}
+        workspaceName={navWorkspaceName}
         workspaces={workspaces}
         onLogout={handleLogout}
         isLoggingOut={isLoading}
@@ -209,7 +227,7 @@ export function DashboardShell({
                     Workspace
                   </p>
                   <p className="truncate text-body font-semibold text-ink">
-                    {workspaceName}
+                    {navWorkspaceName}
                   </p>
                 </div>
                 <ChevronDown className="h-4 w-4 text-ink-muted transition-transform group-open:rotate-180" />
@@ -229,7 +247,7 @@ export function DashboardShell({
                     href={`/workspaces/${workspace.id}`}
                     className={cn(
                       'block rounded-sm px-gap-md py-gap-sm text-body hover:bg-canvas',
-                      workspace.id === workspaceId
+                      workspace.id === navWorkspaceId
                         ? 'bg-canvas text-primary'
                         : 'text-ink'
                     )}

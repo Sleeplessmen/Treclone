@@ -1,46 +1,45 @@
-'use client'
+'use client';
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query';
 
 interface Activity {
-    id: string
-    user: string
-    action: string
-    target: string
-    timestamp: string
+    id: string;
+    user: string;
+    action: string;
+    target: string;
+    summary: string;
+    occurredAt: string;
+    absoluteTime: string;
 }
 
 interface FetchActivitiesResponse {
-    success: boolean
+    success: boolean;
     data: {
-        message: string
-        activities: Activity[]
-    }
+        message: string;
+        activities: Activity[];
+    };
 }
 
 export function useWorkspaceActivities(workspaceId: string) {
     return useQuery<FetchActivitiesResponse['data'], Error>({
         queryKey: ['workspace-activities', workspaceId],
         queryFn: async () => {
-            const response = await fetch(
-                `/api/workspaces/${workspaceId}/activity`,
-                {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                }
-            )
+            const response = await fetch(`/api/workspaces/${workspaceId}/activity`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+            });
 
             if (!response.ok) {
-                const error = await response.json()
-                throw new Error(error.message || 'Failed to fetch activities')
+                const error = await response.json();
+                throw new Error(error.message || 'Failed to fetch activities');
             }
 
-            const json = await response.json()
-            return json.data
+            const json = await response.json();
+            return json.data;
         },
         enabled: !!workspaceId,
-    })
+    });
 }

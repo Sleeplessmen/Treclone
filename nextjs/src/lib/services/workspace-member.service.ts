@@ -1,14 +1,16 @@
-import { WorkspaceMemberRepository } from '@/lib/repositories/workspace-member.repository'
-import { addMemberSchema, removeMemberSchema } from '@/lib/validation/membership'
-import { AuthError, AuthErrorCode } from '@/lib/utils/error-handler'
 import prisma from '@/lib/db/prisma'
+import {
+    addWorkspaceMemberSchema,
+    updateWorkspaceMemberSchema,
+} from '@/lib/validation/workspace-membership'
+import { WorkspaceMemberRepository } from '@/lib/repositories/workspace-member.repository'
+import { AuthError, AuthErrorCode } from '@/lib/utils/error-handler'
 
 export class WorkspaceMemberService {
     private readonly repository = new WorkspaceMemberRepository()
 
     async getMembers(workspaceId: bigint, userId: bigint) {
         try {
-            // Verify workspace exists and user is owner
             const workspace = await prisma.workspace.findUnique({
                 where: { id: workspaceId },
                 select: { id: true, ownerId: true },
@@ -30,8 +32,7 @@ export class WorkspaceMemberService {
                 )
             }
 
-            const members = await this.repository.getWorkspaceMembers(workspaceId)
-            return members
+            return this.repository.getWorkspaceMembers(workspaceId)
         } catch (error) {
             if (error instanceof AuthError) throw error
             throw new AuthError(
@@ -44,7 +45,6 @@ export class WorkspaceMemberService {
 
     async addMember(workspaceId: bigint, userId: bigint, credentials: unknown) {
         try {
-            // Verify workspace exists and user is owner
             const workspace = await prisma.workspace.findUnique({
                 where: { id: workspaceId },
                 select: { id: true, ownerId: true },
@@ -66,10 +66,10 @@ export class WorkspaceMemberService {
                 )
             }
 
-            const validatedData = addMemberSchema.parse(credentials)
-
-            // Check if user with email exists
-            const targetUser = await this.repository.getUserByEmail(validatedData.email)
+            const validatedData = addWorkspaceMemberSchema.parse(credentials)
+            const targetUser = await this.repository.getUserByEmail(
+                validatedData.email
+            )
 
             if (!targetUser) {
                 throw new AuthError(
@@ -79,7 +79,6 @@ export class WorkspaceMemberService {
                 )
             }
 
-            // Check if user is already a member
             const existingMember = await this.repository.checkExistingMember(
                 workspaceId,
                 targetUser.id
@@ -93,13 +92,11 @@ export class WorkspaceMemberService {
                 )
             }
 
-            const member = await this.repository.addMember(
+            return this.repository.addMember(
                 workspaceId,
                 targetUser.id,
                 validatedData.role
             )
-
-            return member
         } catch (error) {
             if (error instanceof AuthError) throw error
             throw new AuthError(
@@ -110,9 +107,13 @@ export class WorkspaceMemberService {
         }
     }
 
-    async removeMember(workspaceId: bigint, userId: bigint, credentials: unknown) {
+    async updateMemberRole(
+        workspaceId: bigint,
+        memberId: bigint,
+        userId: bigint,
+        credentials: unknown
+    ) {
         try {
-            // Verify workspace exists and user is owner
             const workspace = await prisma.workspace.findUnique({
                 where: { id: workspaceId },
                 select: { id: true, ownerId: true },
@@ -134,10 +135,8 @@ export class WorkspaceMemberService {
                 )
             }
 
-            const validatedData = removeMemberSchema.parse(credentials)
-
-            // Verify member exists and belongs to workspace
-            const member = await this.repository.getMemberById(validatedData.memberId)
+            const validatedData = updateWorkspaceMemberSchema.parse(credentials)
+            const member = await this.repository.getMemberById(memberId)
 
             if (member?.workspaceId !== workspaceId) {
                 throw new AuthError(
@@ -147,7 +146,71 @@ export class WorkspaceMemberService {
                 )
             }
 
-            await this.repository.removeMember(validatedData.memberId)
+            if (member.userId === workspace.ownerId) {
+                throw new AuthError(
+                    'Cannot update the workspace owner',
+                    403,
+                    AuthErrorCode.INVALID_CREDENTIALS
+                )
+            }
+
+            return this.repository.updateMemberRole(memberId, validatedData.role)
+        } catch (error) {
+            if (error instanceof AuthError) throw error
+            throw new AuthError(
+                'Failed to update member',
+                500,
+                AuthErrorCode.INTERNAL_ERROR
+            )
+        }
+    }
+
+    async removeMemberById(
+        workspaceId: bigint,
+        memberId: bigint,
+        userId: bigint
+    ) {
+        try {
+            const workspace = await prisma.workspace.findUnique({
+                where: { id: workspaceId },
+                select: { id: true, ownerId: true },
+            })
+
+            if (!workspace) {
+                throw new AuthError(
+                    'Workspace not found',
+                    404,
+                    AuthErrorCode.USER_NOT_FOUND
+                )
+            }
+
+            if (workspace.ownerId !== userId) {
+                throw new AuthError(
+                    'Forbidden - not the workspace owner',
+                    403,
+                    AuthErrorCode.INVALID_CREDENTIALS
+                )
+            }
+
+            const member = await this.repository.getMemberById(memberId)
+
+            if (member?.workspaceId !== workspaceId) {
+                throw new AuthError(
+                    'Member not found in this workspace',
+                    404,
+                    AuthErrorCode.USER_NOT_FOUND
+                )
+            }
+
+            if (member.userId === workspace.ownerId) {
+                throw new AuthError(
+                    'Cannot remove the workspace owner',
+                    403,
+                    AuthErrorCode.INVALID_CREDENTIALS
+                )
+            }
+
+            await this.repository.removeMember(memberId)
         } catch (error) {
             if (error instanceof AuthError) throw error
             throw new AuthError(

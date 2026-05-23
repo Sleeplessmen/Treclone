@@ -8,7 +8,6 @@ export class CardService {
 
     async getCardsByListId(listId: bigint, userId: bigint) {
         try {
-            // Verify list exists and board is owned by user
             const list = await prisma.list.findUnique({
                 where: { id: listId },
                 select: { id: true, boardId: true },
@@ -27,7 +26,7 @@ export class CardService {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,
-                    AuthErrorCode.INVALID_CREDENTIALS
+                    AuthErrorCode.FORBIDDEN
                 )
             }
 
@@ -51,7 +50,6 @@ export class CardService {
                 throw new AuthError('Card not found', 404, AuthErrorCode.USER_NOT_FOUND)
             }
 
-            // Verify user owns the board
             const board = await prisma.board.findUnique({
                 where: { id: card.list.boardId },
                 select: { id: true, ownerId: true },
@@ -61,7 +59,7 @@ export class CardService {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,
-                    AuthErrorCode.INVALID_CREDENTIALS
+                    AuthErrorCode.FORBIDDEN
                 )
             }
 
@@ -78,7 +76,6 @@ export class CardService {
 
     async createCard(listId: bigint, userId: bigint, credentials: unknown) {
         try {
-            // Verify list exists and board is owned by user
             const list = await prisma.list.findUnique({
                 where: { id: listId },
                 select: { id: true, boardId: true },
@@ -97,11 +94,28 @@ export class CardService {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,
-                    AuthErrorCode.INVALID_CREDENTIALS
+                    AuthErrorCode.FORBIDDEN
                 )
             }
 
             const validatedData = createCardSchema.parse(credentials)
+            const title = validatedData.title.trim()
+
+            const existingCard = await prisma.card.findFirst({
+                where: {
+                    listId,
+                    title,
+                },
+                select: { id: true },
+            })
+
+            if (existingCard) {
+                throw new AuthError(
+                    'Card title already exists in this list',
+                    409,
+                    AuthErrorCode.VALIDATION_ERROR
+                )
+            }
 
             let position = validatedData.position
             if (position === undefined) {
@@ -114,7 +128,7 @@ export class CardService {
             }
 
             const card = await this.repository.createCard(listId, userId, {
-                title: validatedData.title,
+                title,
                 description: validatedData.description,
                 position,
                 assigneeUserId: validatedData.assigneeUserId,
@@ -139,7 +153,6 @@ export class CardService {
                 throw new AuthError('Card not found', 404, AuthErrorCode.USER_NOT_FOUND)
             }
 
-            // Verify user owns the board
             const board = await prisma.board.findUnique({
                 where: { id: card.list.boardId },
                 select: { id: true, ownerId: true },
@@ -149,16 +162,39 @@ export class CardService {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,
-                    AuthErrorCode.INVALID_CREDENTIALS
+                    AuthErrorCode.FORBIDDEN
                 )
             }
 
             const validatedData = updateCardSchema.parse(credentials)
 
-            const updateData: any = {}
+            const updateData: {
+                title?: string
+                description?: string
+                assigneeUserId?: bigint
+            } = {}
 
-            if (validatedData.title) {
-                updateData.title = validatedData.title
+            if (validatedData.title !== undefined) {
+                const nextTitle = validatedData.title.trim()
+
+                const existingCard = await prisma.card.findFirst({
+                    where: {
+                        listId: card.listId,
+                        title: nextTitle,
+                        id: { not: cardId },
+                    },
+                    select: { id: true },
+                })
+
+                if (existingCard) {
+                    throw new AuthError(
+                        'Card title already exists in this list',
+                        409,
+                        AuthErrorCode.VALIDATION_ERROR
+                    )
+                }
+
+                updateData.title = nextTitle
             }
 
             if (validatedData.description !== undefined) {
@@ -189,7 +225,6 @@ export class CardService {
                 throw new AuthError('Card not found', 404, AuthErrorCode.USER_NOT_FOUND)
             }
 
-            // Verify user owns the board
             const board = await prisma.board.findUnique({
                 where: { id: card.list.boardId },
                 select: { id: true, ownerId: true },
@@ -199,13 +234,12 @@ export class CardService {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,
-                    AuthErrorCode.INVALID_CREDENTIALS
+                    AuthErrorCode.FORBIDDEN
                 )
             }
 
             const validatedData = moveCardSchema.parse(credentials)
 
-            // Verify target list exists in the same board
             const targetList = await prisma.list.findUnique({
                 where: { id: validatedData.listId },
                 select: { id: true, boardId: true },
@@ -215,7 +249,7 @@ export class CardService {
                 throw new AuthError(
                     'Target list does not belong to this board',
                     400,
-                    AuthErrorCode.INVALID_CREDENTIALS
+                    AuthErrorCode.VALIDATION_ERROR
                 )
             }
 
@@ -244,7 +278,6 @@ export class CardService {
                 throw new AuthError('Card not found', 404, AuthErrorCode.USER_NOT_FOUND)
             }
 
-            // Verify user owns the board
             const board = await prisma.board.findUnique({
                 where: { id: card.list.boardId },
                 select: { id: true, ownerId: true },
@@ -254,7 +287,7 @@ export class CardService {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,
-                    AuthErrorCode.INVALID_CREDENTIALS
+                    AuthErrorCode.FORBIDDEN
                 )
             }
 

@@ -9,7 +9,6 @@ import {
   Activity,
   Users,
   LogOut,
-  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils/cn';
@@ -23,7 +22,7 @@ interface NavItem {
   id: string;
   href: string;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<any>;
 }
 
 export function DashboardMobileNav({
@@ -38,35 +37,48 @@ export function DashboardMobileNav({
 }: Readonly<{
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  workspaces: WorkspaceItem[];
-  workspaceId: string;
-  workspaceName: string;
-  pathname: string;
-  onLogout: () => void;
-  isLoggingOut: boolean;
+  workspaces?: WorkspaceItem[];
+  workspaceId?: string;
+  workspaceName?: string;
+  pathname?: string;
+  onLogout?: () => void;
+  isLoggingOut?: boolean;
 }>) {
+  const safeWorkspaces = workspaces ?? [];
+  const safeWorkspaceId = workspaceId ?? '';
+  const safeWorkspaceName = workspaceName ?? 'Select workspace';
+  const safePathname = pathname ?? '';
+
   const navItems: NavItem[] = [
     {
       id: 'boards',
-      href: workspaceId ? `/workspaces/${workspaceId}/boards` : '/workspaces',
+      href: safeWorkspaceId
+        ? `/workspaces/${safeWorkspaceId}/boards`
+        : '/workspaces',
       label: 'All boards',
       icon: LayoutGrid,
     },
     {
       id: 'starred',
-      href: workspaceId ? `/workspaces/${workspaceId}/starred` : '/workspaces',
+      href: safeWorkspaceId
+        ? `/workspaces/${safeWorkspaceId}/starred`
+        : '/workspaces',
       label: 'Starred',
       icon: Star,
     },
     {
       id: 'activity',
-      href: workspaceId ? `/workspaces/${workspaceId}/activity` : '/workspaces',
+      href: safeWorkspaceId
+        ? `/workspaces/${safeWorkspaceId}/activity`
+        : '/workspaces',
       label: 'Activity',
       icon: Activity,
     },
     {
       id: 'members',
-      href: workspaceId ? `/workspaces/${workspaceId}/members` : '/workspaces',
+      href: safeWorkspaceId
+        ? `/workspaces/${safeWorkspaceId}/members`
+        : '/workspaces',
       label: 'Team members',
       icon: Users,
     },
@@ -96,13 +108,13 @@ export function DashboardMobileNav({
           open ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <div className="flex items-center justify-between border-b border-hairline-ghost px-gap-md py-gap-md">
+        {/* <div className="flex items-center justify-between border-b border-hairline-ghost px-gap-md py-gap-md">
           <div>
             <p className="text-label-xs uppercase tracking-wide text-ink-muted">
               Workspace
             </p>
             <p className="truncate text-body font-semibold text-ink">
-              {workspaceName}
+              {safeWorkspaceName}
             </p>
           </div>
           <Button
@@ -113,7 +125,7 @@ export function DashboardMobileNav({
           >
             <X className="h-4 w-4" />
           </Button>
-        </div>
+        </div> */}
 
         <div className="border-b border-hairline-ghost px-gap-md py-gap-md">
           <details className="group">
@@ -121,9 +133,6 @@ export function DashboardMobileNav({
               <div className="min-w-0">
                 <p className="text-label-xs uppercase tracking-wide text-ink-muted">
                   Switch workspace
-                </p>
-                <p className="truncate text-body font-semibold text-ink">
-                  {workspaceName}
                 </p>
               </div>
               <ChevronDown className="h-4 w-4 text-ink-muted transition-transform group-open:rotate-180" />
@@ -138,13 +147,13 @@ export function DashboardMobileNav({
                 All workspaces
               </Link>
 
-              {workspaces.map((workspace) => (
+              {safeWorkspaces.map((workspace) => (
                 <Link
                   key={workspace.id}
                   href={`/workspaces/${workspace.id}`}
                   className={cn(
                     'block rounded-sm px-gap-md py-gap-sm text-body hover:bg-canvas',
-                    workspace.id === workspaceId
+                    workspace.id === safeWorkspaceId
                       ? 'bg-canvas text-primary'
                       : 'text-ink'
                   )}
@@ -160,7 +169,7 @@ export function DashboardMobileNav({
         <nav className="flex flex-1 flex-col gap-gap-xs p-gap-md">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname.startsWith(item.href);
+            const isActive = safePathname.startsWith(item.href);
 
             return (
               <Link
@@ -190,7 +199,7 @@ export function DashboardMobileNav({
           <Button
             variant="outline"
             className="mt-gap-sm w-full justify-start"
-            onClick={onLogout}
+            onClick={() => onLogout?.()}
             disabled={isLoggingOut}
           >
             <LogOut className="mr-gap-sm h-4 w-4" />

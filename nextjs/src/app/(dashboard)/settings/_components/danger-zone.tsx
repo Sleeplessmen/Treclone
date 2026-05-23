@@ -54,16 +54,19 @@ export function DangerZone() {
             Once you delete your account, there is no going back. Please be
             certain.
           </p>
-          <Button
-            variant="destructive"
-            className="mt-gap-sm"
-            onClick={() => setShowDeleteConfirm(true)}
-            disabled={isDeleting || deleteAccountMutation.isPending}
-          >
-            {isDeleting || deleteAccountMutation.isPending
-              ? 'Deleting...'
-              : 'Delete Account'}
-          </Button>
+
+          <div className="mt-gap-sm flex justify-center">
+            <Button
+              variant="destructive"
+              className="w-full max-w-xs"
+              onClick={() => setShowDeleteConfirm(true)}
+              disabled={isDeleting || deleteAccountMutation.isPending}
+            >
+              {isDeleting || deleteAccountMutation.isPending
+                ? 'Deleting...'
+                : 'Delete Account'}
+            </Button>
+          </div>
         </div>
       </CardContent>
       <ConfirmDialog

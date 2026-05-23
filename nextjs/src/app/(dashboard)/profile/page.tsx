@@ -111,7 +111,7 @@ export default function ProfilePage() {
                   <p className="text-body text-ink-muted">{profile.email}</p>
                 </div>
                 <p className="text-label-sm text-ink-muted">
-                  Account created on
+                  Account created on&nbsp;
                   {new Date(profile.createdAt).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',

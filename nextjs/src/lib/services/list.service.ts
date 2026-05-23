@@ -8,21 +8,24 @@ export class ListService {
 
     async getListsByBoardId(boardId: bigint, userId: bigint) {
         try {
-            // Verify board exists and user owns it
             const board = await prisma.board.findUnique({
                 where: { id: boardId },
                 select: { id: true, ownerId: true },
             })
 
             if (!board) {
-                throw new AuthError('Board not found', 404, AuthErrorCode.USER_NOT_FOUND)
+                throw new AuthError(
+                    'Board not found',
+                    404,
+                    AuthErrorCode.USER_NOT_FOUND
+                )
             }
 
             if (board.ownerId !== userId) {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,
-                    AuthErrorCode.INVALID_CREDENTIALS
+                    AuthErrorCode.FORBIDDEN
                 )
             }
 
@@ -46,7 +49,6 @@ export class ListService {
                 throw new AuthError('List not found', 404, AuthErrorCode.USER_NOT_FOUND)
             }
 
-            // Verify user owns the board
             const board = await prisma.board.findUnique({
                 where: { id: list.boardId },
                 select: { id: true, ownerId: true },
@@ -56,7 +58,7 @@ export class ListService {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,
-                    AuthErrorCode.INVALID_CREDENTIALS
+                    AuthErrorCode.FORBIDDEN
                 )
             }
 
@@ -73,39 +75,58 @@ export class ListService {
 
     async createList(boardId: bigint, userId: bigint, credentials: unknown) {
         try {
-            // Verify board exists and user owns it
             const board = await prisma.board.findUnique({
                 where: { id: boardId },
                 select: { id: true, ownerId: true },
             })
 
             if (!board) {
-                throw new AuthError('Board not found', 404, AuthErrorCode.USER_NOT_FOUND)
+                throw new AuthError(
+                    'Board not found',
+                    404,
+                    AuthErrorCode.USER_NOT_FOUND
+                )
             }
 
             if (board.ownerId !== userId) {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,
-                    AuthErrorCode.INVALID_CREDENTIALS
+                    AuthErrorCode.FORBIDDEN
                 )
             }
 
             const validatedData = createListSchema.parse(credentials)
+            const title = validatedData.title.trim()
 
-            // If position not provided, calculate it based on existing lists
+            const existingList = await prisma.list.findFirst({
+                where: {
+                    boardId,
+                    title,
+                },
+                select: { id: true },
+            })
+
+            if (existingList) {
+                throw new AuthError(
+                    'List title already exists in this board',
+                    409,
+                    AuthErrorCode.VALIDATION_ERROR
+                )
+            }
+
             let position = validatedData.position
             if (position === undefined) {
                 const lastList = await prisma.list.findFirst({
                     where: { boardId },
                     orderBy: { position: 'desc' },
-                    select: { position: true }
+                    select: { position: true },
                 })
                 position = (lastList?.position ?? -1) + 1
             }
 
             const list = await this.repository.createList(boardId, {
-                title: validatedData.title,
+                title,
                 position,
             })
 
@@ -128,7 +149,6 @@ export class ListService {
                 throw new AuthError('List not found', 404, AuthErrorCode.USER_NOT_FOUND)
             }
 
-            // Verify user owns the board
             const board = await prisma.board.findUnique({
                 where: { id: list.boardId },
                 select: { id: true, ownerId: true },
@@ -138,16 +158,38 @@ export class ListService {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,
-                    AuthErrorCode.INVALID_CREDENTIALS
+                    AuthErrorCode.FORBIDDEN
                 )
             }
 
             const validatedData = updateListSchema.parse(credentials)
 
-            const updateData: any = {}
+            const updateData: {
+                title?: string
+                position?: number
+            } = {}
 
-            if (validatedData.title) {
-                updateData.title = validatedData.title
+            if (validatedData.title !== undefined) {
+                const nextTitle = validatedData.title.trim()
+
+                const existingList = await prisma.list.findFirst({
+                    where: {
+                        boardId: list.boardId,
+                        title: nextTitle,
+                        id: { not: listId },
+                    },
+                    select: { id: true },
+                })
+
+                if (existingList) {
+                    throw new AuthError(
+                        'List title already exists in this board',
+                        409,
+                        AuthErrorCode.VALIDATION_ERROR
+                    )
+                }
+
+                updateData.title = nextTitle
             }
 
             if (validatedData.position !== undefined) {
@@ -174,7 +216,6 @@ export class ListService {
                 throw new AuthError('List not found', 404, AuthErrorCode.USER_NOT_FOUND)
             }
 
-            // Verify user owns the board
             const board = await prisma.board.findUnique({
                 where: { id: list.boardId },
                 select: { id: true, ownerId: true },
@@ -184,7 +225,7 @@ export class ListService {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,
-                    AuthErrorCode.INVALID_CREDENTIALS
+                    AuthErrorCode.FORBIDDEN
                 )
             }
 
