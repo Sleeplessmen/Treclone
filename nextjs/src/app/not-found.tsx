@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 
 export default function NotFound() {
   return (
@@ -16,9 +15,12 @@ export default function NotFound() {
             The page you are looking for does not exist or has been moved.
           </p>
         </div>
-        <Button asChild variant="default">
-          <Link href="/">Go home</Link>
-        </Button>
+        <Link
+          href="/"
+          className="inline-flex h-10 items-center justify-center rounded-sm bg-gradient-to-br from-primary to-primary-container px-6 text-xs font-semibold uppercase tracking-widest text-on-primary transition-all hover:from-primary/90 hover:to-primary-container/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+        >
+          Go home
+        </Link>
       </div>
     </main>
   );
