@@ -26,15 +26,16 @@ export default async function MarketingHomePage() {
           <div className="mx-auto flex max-w-6xl flex-col gap-gap-sm rounded-sm bg-surface-2 p-gap-md text-center md:flex-row md:items-center md:justify-between md:text-left">
             <div>
               <p className="text-label-sm font-semibold uppercase tracking-wide text-primary">
-                Welcome back
+                Chào mừng trở lại!
               </p>
               <p className="text-body text-ink-muted">
-                Your dashboard is ready. Jump straight into your workspaces.
+                Bạn đã đăng nhập. Hãy tiếp tục quản lý công việc và dự án của
+                bạn.
               </p>
             </div>
             <Button asChild variant="default" size="lg">
               <Link href="/workspaces">
-                Go to workspaces
+                Đi tới Không gian làm việc của bạn
                 <ArrowRight className="ml-gap-sm h-4 w-4" />
               </Link>
             </Button>
@@ -73,19 +74,19 @@ export default async function MarketingHomePage() {
             <div className="bg-surface-2 rounded-sm p-gap-md space-y-gap-sm">
               <div className="w-12 h-12 bg-primary/10 rounded-sm flex items-center justify-center">
                 <LayoutGrid className="h-6 w-6 text-primary" />
-              </div>{' '}
+              </div>
               <h3 className="text-title-md font-heading text-ink">
-                Quản lý trực quan{' '}
+                Quản lý trực quan
               </h3>
               <p className="text-body text-ink-muted">
                 Kéo thả thẻ, sắp xếp danh sách và theo dõi tiến độ công việc một
-                cách trực quan, dễ nắm bắt.{' '}
+                cách trực quan, dễ nắm bắt.
               </p>
             </div>
             <div className="bg-surface-2 rounded-sm p-gap-md space-y-gap-sm">
               <div className="w-12 h-12 bg-primary/10 rounded-sm flex items-center justify-center">
                 <Users className="h-6 w-6 text-primary" />
-              </div>{' '}
+              </div>
               <h3 className="text-title-md font-heading text-ink">
                 Cộng tác nhóm
               </h3>
@@ -97,9 +98,9 @@ export default async function MarketingHomePage() {
             <div className="bg-surface-2 rounded-sm p-gap-md space-y-gap-sm">
               <div className="w-12 h-12 bg-primary/10 rounded-sm flex items-center justify-center">
                 <BarChart2 className="h-6 w-6 text-primary" />
-              </div>{' '}
+              </div>
               <h3 className="text-title-md font-heading text-ink">
-                Theo dõi và báo cáo{' '}
+                Theo dõi và báo cáo
               </h3>
               <p className="text-body text-ink-muted">
                 Theo dõi trạng thái công việc, lịch sử hoạt động và báo cáo tiến
@@ -118,7 +119,7 @@ export default async function MarketingHomePage() {
           </h2>
           <p className="text-body text-ink-muted">
             Tạo tài khoản miễn phí ngay — quản lý công việc hiệu quả hơn từ hôm
-            nay.{' '}
+            nay.
           </p>
           <Link href="/register" className="block">
             <Button variant="default" size="lg">

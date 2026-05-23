@@ -116,7 +116,7 @@ export default function BoardMembersPage() {
                 <div className="flex items-center gap-gap-sm">
                   <Badge variant="secondary">{selectedEmail}</Badge>
                   <span className="text-label-sm text-ink-muted">
-                    <Check className="inline-block h-3.5 w-3.5 align-[-2px]" />{' '}
+                    <Check className="inline-block h-3.5 w-3.5 align-[-2px]" />
                     Selected
                   </span>
                 </div>

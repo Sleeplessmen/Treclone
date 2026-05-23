@@ -19,6 +19,13 @@ interface WorkspaceItem {
   name: string;
 }
 
+interface NavItem {
+  id: string;
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
 export function DashboardMobileNav({
   open,
   onOpenChange,
@@ -38,23 +45,27 @@ export function DashboardMobileNav({
   onLogout: () => void;
   isLoggingOut: boolean;
 }>) {
-  const navItems = [
+  const navItems: NavItem[] = [
     {
+      id: 'boards',
       href: workspaceId ? `/workspaces/${workspaceId}/boards` : '/workspaces',
       label: 'All boards',
       icon: LayoutGrid,
     },
     {
+      id: 'starred',
       href: workspaceId ? `/workspaces/${workspaceId}/starred` : '/workspaces',
       label: 'Starred',
       icon: Star,
     },
     {
+      id: 'activity',
       href: workspaceId ? `/workspaces/${workspaceId}/activity` : '/workspaces',
       label: 'Activity',
       icon: Activity,
     },
     {
+      id: 'members',
       href: workspaceId ? `/workspaces/${workspaceId}/members` : '/workspaces',
       label: 'Team members',
       icon: Users,
@@ -153,7 +164,7 @@ export function DashboardMobileNav({
 
             return (
               <Link
-                key={item.href}
+                key={item.id}
                 href={item.href}
                 onClick={() => onOpenChange(false)}
                 className={cn(

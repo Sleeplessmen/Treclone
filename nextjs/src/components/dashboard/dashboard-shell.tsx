@@ -17,13 +17,12 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/auth/use-auth';
 import { useWorkspaces, useWorkspace } from '@/hooks/workspace';
-import { useBoard } from '@/hooks/boards';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { DashboardBreadcrumbs } from './dashboard-breadcrumbs';
 import { DashboardMobileNav } from './dashboard-mobile-nav';
 import { cn } from '@/lib/utils/cn';
+import Image from 'next/image';
 
 export function DashboardShell({
   children,
@@ -40,10 +39,8 @@ export function DashboardShell({
 
   const routeWorkspaceId =
     typeof params.workspaceId === 'string' ? params.workspaceId : '';
-  const routeBoardId = typeof params.boardId === 'string' ? params.boardId : '';
 
   const { data: routeWorkspace } = useWorkspace(routeWorkspaceId);
-  const { data: routeBoard } = useBoard(routeWorkspaceId, routeBoardId);
 
   const workspaces = workspacesData?.workspaces ?? [];
   const selectedWorkspace =
@@ -53,7 +50,6 @@ export function DashboardShell({
 
   const workspaceId = selectedWorkspace?.id ?? '';
   const workspaceName = selectedWorkspace?.name ?? 'Select workspace';
-  const boardName = routeBoard?.title ?? '';
 
   const userInitial = useMemo(() => {
     return user?.fullName?.trim()?.charAt(0)?.toUpperCase() ?? '?';
@@ -70,21 +66,25 @@ export function DashboardShell({
 
   const desktopNavItems = [
     {
+      id: 'boards',
       href: workspaceId ? `/workspaces/${workspaceId}/boards` : '/workspaces',
       label: 'All boards',
       icon: LayoutGrid,
     },
     {
+      id: 'starred',
       href: workspaceId ? `/workspaces/${workspaceId}/starred` : '/workspaces',
       label: 'Starred',
       icon: Star,
     },
     {
+      id: 'activity',
       href: workspaceId ? `/workspaces/${workspaceId}/activity` : '/workspaces',
       label: 'Activity',
       icon: Activity,
     },
     {
+      id: 'members',
       href: workspaceId ? `/workspaces/${workspaceId}/members` : '/workspaces',
       label: 'Team members',
       icon: Users,
@@ -93,6 +93,7 @@ export function DashboardShell({
 
   return (
     <div className="min-h-screen bg-canvas">
+      {/* Header */}
       <header className="sticky top-0 z-40 border-b border-hairline-ghost bg-surface-1/95 backdrop-blur">
         <div className="flex flex-col gap-gap-md px-gap-md py-gap-md md:h-16 md:flex-row md:items-center md:gap-gap-md md:px-gap-lg md:py-0">
           <div className="flex items-center justify-between gap-gap-md md:shrink-0">
@@ -106,18 +107,17 @@ export function DashboardShell({
               >
                 <Menu className="h-4 w-4" />
               </Button>
-              <Link href="/workspaces" className="flex items-center gap-gap-sm">
-                <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-primary">
-                  <span className="text-sm font-heading text-white">T</span>
-                </div>
-                <div className="leading-tight">
-                  <div className="text-headline-sm font-heading text-ink">
-                    Treclone
-                  </div>
-                  <div className="text-label-xs text-ink-muted">
-                    Project workspace
-                  </div>
-                </div>
+              <Link href="/" className="flex items-center">
+                <span className="inline-flex items-center justify-center rounded-full bg-surface-2">
+                  <Image
+                    src="/logo.png"
+                    alt="Treclone"
+                    width={190}
+                    height={44}
+                    className="h-9 w-auto object-contain"
+                    priority
+                  />
+                </span>
               </Link>
             </div>
 
@@ -126,6 +126,20 @@ export function DashboardShell({
                 <Bell className="h-4 w-4" />
               </Button>
               <ThemeToggle />
+
+              {user ? (
+                <Link
+                  href="/profile"
+                  className="flex h-9 w-9 items-center justify-center rounded-sm bg-primary transition-colors hover:opacity-90"
+                  aria-label="Open profile"
+                >
+                  <span className="text-xs font-heading text-white">
+                    {userInitial}
+                  </span>
+                </Link>
+              ) : (
+                <div className="h-9 w-9 animate-pulse rounded-sm bg-surface-2" />
+              )}
             </div>
           </div>
 
@@ -146,7 +160,10 @@ export function DashboardShell({
             <ThemeToggle />
 
             {user ? (
-              <div className="flex items-center gap-gap-sm rounded-sm px-gap-sm py-gap-xs">
+              <Link
+                href="/profile"
+                className="flex items-center gap-gap-sm rounded-sm px-gap-sm py-gap-xs transition-colors hover:bg-canvas"
+              >
                 <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-primary">
                   <span className="text-xs font-heading text-white">
                     {userInitial}
@@ -160,34 +177,15 @@ export function DashboardShell({
                     {user.email}
                   </p>
                 </div>
-              </div>
+              </Link>
             ) : (
               <div className="h-9 w-36 animate-pulse rounded-sm bg-surface-2" />
             )}
           </div>
-
-          {user ? (
-            <div className="flex items-center gap-gap-sm md:hidden">
-              <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-primary">
-                <span className="text-xs font-heading text-white">
-                  {userInitial}
-                </span>
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-label-sm font-semibold text-ink">
-                  {user.fullName}
-                </p>
-                <p className="truncate text-label-xs text-ink-muted">
-                  {user.email}
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="h-9 w-full animate-pulse rounded-sm bg-surface-2 md:hidden" />
-          )}
         </div>
       </header>
 
+      {/* Mobile Navigation */}
       <DashboardMobileNav
         open={isMobileNavOpen}
         onOpenChange={setIsMobileNavOpen}
@@ -199,8 +197,10 @@ export function DashboardShell({
         pathname={pathname}
       />
 
-      <div className="flex min-h-[calc(100vh-4rem)]">
-        <aside className="hidden w-72 flex-col border-r border-hairline-ghost bg-surface-1 md:flex">
+      {/* Main Content Area with Sidebar */}
+      <div className="flex min-h-[calc(100vh-4rem)] gap-gap-lg bg-canvas p-gap-md md:p-gap-lg">
+        {/* Sidebar - Desktop */}
+        <aside className="hidden w-72 flex-col rounded-xl border border-hairline-ghost bg-surface-1 md:flex">
           <div className="border-b border-hairline-ghost p-gap-md">
             <details className="group">
               <summary className="flex cursor-pointer list-none items-center justify-between rounded-sm px-gap-md py-gap-sm hover:bg-canvas">
@@ -248,7 +248,7 @@ export function DashboardShell({
 
               return (
                 <Link
-                  key={item.href}
+                  key={item.id}
                   href={item.href}
                   className={cn(
                     'flex items-center gap-gap-sm rounded-sm px-gap-md py-gap-sm text-body hover:bg-canvas',
@@ -262,37 +262,26 @@ export function DashboardShell({
             })}
           </nav>
 
-          <div className="mt-auto border-t border-hairline-ghost p-gap-md">
+          <div className="border-t border-hairline-ghost p-gap-md">
             <Button asChild variant="ghost" className="w-full justify-start">
               <Link href="/settings">
                 <Settings className="mr-gap-sm h-4 w-4" />
                 Settings
               </Link>
             </Button>
-
             <Button
               variant="outline"
               className="mt-gap-sm w-full justify-start"
               onClick={handleLogout}
-              disabled={isLoading}
             >
               <LogOut className="mr-gap-sm h-4 w-4" />
-              {isLoading ? 'Logging out...' : 'Logout'}
+              Logout
             </Button>
           </div>
         </aside>
-
-        <main className="flex-1 overflow-auto px-gap-md py-gap-lg md:px-gap-xl md:py-gap-xl">
-          <div className="space-y-gap-lg">
-            <DashboardBreadcrumbs
-              pathname={pathname}
-              workspaceId={workspaceId}
-              workspaceName={workspaceName}
-              boardId={routeBoardId}
-              boardName={boardName}
-            />
-            {children}
-          </div>
+        {/* Main Content */}
+        <main className="flex-1 rounded-xl bg-surface-2 p-gap-lg md:p-gap-xl">
+          {children}
         </main>
       </div>
     </div>

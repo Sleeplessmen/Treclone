@@ -89,8 +89,8 @@ export default function ActivityPage() {
                   className="py-gap-md border-b border-hairline-ghost last:border-b-0"
                 >
                   <p className="text-body text-ink">
-                    <span className="font-semibold">{activity.user}</span>{' '}
-                    {activity.action}{' '}
+                    <span className="font-semibold">{activity.user}</span>
+                    {activity.action}
                     <span className="text-primary">{activity.target}</span>
                   </p>
                   <p className="text-label-sm text-ink-muted">
