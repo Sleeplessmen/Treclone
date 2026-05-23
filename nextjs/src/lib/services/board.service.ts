@@ -8,21 +8,24 @@ export class BoardService {
 
     async getBoardsByWorkspaceId(workspaceId: bigint, userId: bigint) {
         try {
-            // Verify workspace exists and user owns it
             const workspace = await prisma.workspace.findUnique({
                 where: { id: workspaceId },
                 select: { id: true, ownerId: true },
             })
 
             if (!workspace) {
-                throw new AuthError('Workspace not found', 404, AuthErrorCode.USER_NOT_FOUND)
+                throw new AuthError(
+                    'Workspace not found',
+                    404,
+                    AuthErrorCode.USER_NOT_FOUND
+                )
             }
 
             if (workspace.ownerId !== userId) {
                 throw new AuthError(
                     'Forbidden - not the workspace owner',
                     403,
-                    AuthErrorCode.INVALID_CREDENTIALS
+                    AuthErrorCode.FORBIDDEN
                 )
             }
 
@@ -50,7 +53,7 @@ export class BoardService {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,
-                    AuthErrorCode.INVALID_CREDENTIALS
+                    AuthErrorCode.FORBIDDEN
                 )
             }
 
@@ -67,28 +70,48 @@ export class BoardService {
 
     async createBoard(workspaceId: bigint, userId: bigint, credentials: unknown) {
         try {
-            // Verify workspace exists and user owns it
             const workspace = await prisma.workspace.findUnique({
                 where: { id: workspaceId },
                 select: { id: true, ownerId: true },
             })
 
             if (!workspace) {
-                throw new AuthError('Workspace not found', 404, AuthErrorCode.USER_NOT_FOUND)
+                throw new AuthError(
+                    'Workspace not found',
+                    404,
+                    AuthErrorCode.USER_NOT_FOUND
+                )
             }
 
             if (workspace.ownerId !== userId) {
                 throw new AuthError(
                     'Forbidden - not the workspace owner',
                     403,
-                    AuthErrorCode.INVALID_CREDENTIALS
+                    AuthErrorCode.FORBIDDEN
                 )
             }
 
             const validatedData = createBoardSchema.parse(credentials)
+            const title = validatedData.title.trim()
+
+            const existingBoard = await prisma.board.findFirst({
+                where: {
+                    workspaceId,
+                    title,
+                },
+                select: { id: true },
+            })
+
+            if (existingBoard) {
+                throw new AuthError(
+                    'Board title already exists in this workspace',
+                    409,
+                    AuthErrorCode.VALIDATION_ERROR
+                )
+            }
 
             const board = await this.repository.createBoard(workspaceId, userId, {
-                title: validatedData.title,
+                title,
                 description: validatedData.description,
             })
 
@@ -115,16 +138,38 @@ export class BoardService {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,
-                    AuthErrorCode.INVALID_CREDENTIALS
+                    AuthErrorCode.FORBIDDEN
                 )
             }
 
             const validatedData = updateBoardSchema.parse(credentials)
 
-            const updateData: any = {}
+            const updateData: {
+                title?: string
+                description?: string
+            } = {}
 
-            if (validatedData.title) {
-                updateData.title = validatedData.title
+            if (validatedData.title !== undefined) {
+                const nextTitle = validatedData.title.trim()
+
+                const existingBoard = await prisma.board.findFirst({
+                    where: {
+                        workspaceId: board.workspaceId,
+                        title: nextTitle,
+                        id: { not: boardId },
+                    },
+                    select: { id: true },
+                })
+
+                if (existingBoard) {
+                    throw new AuthError(
+                        'Board title already exists in this workspace',
+                        409,
+                        AuthErrorCode.VALIDATION_ERROR
+                    )
+                }
+
+                updateData.title = nextTitle
             }
 
             if (validatedData.description !== undefined) {
@@ -155,7 +200,7 @@ export class BoardService {
                 throw new AuthError(
                     'Forbidden - you do not own this board',
                     403,
-                    AuthErrorCode.INVALID_CREDENTIALS
+                    AuthErrorCode.FORBIDDEN
                 )
             }
 

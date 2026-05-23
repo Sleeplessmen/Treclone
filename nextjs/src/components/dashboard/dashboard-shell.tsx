@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/auth/use-auth';
 import { useWorkspaces, useWorkspace } from '@/hooks/workspace';
+import { useBoard } from '@/hooks/boards';
+import { DashboardBreadcrumbs } from './dashboard-breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -39,8 +41,10 @@ export function DashboardShell({
 
   const routeWorkspaceId =
     typeof params.workspaceId === 'string' ? params.workspaceId : '';
+  const routeBoardId = typeof params.boardId === 'string' ? params.boardId : '';
 
   const { data: routeWorkspace } = useWorkspace(routeWorkspaceId);
+  const { data: routeBoard } = useBoard(routeWorkspaceId, routeBoardId);
 
   const workspaces = workspacesData?.workspaces ?? [];
   const selectedWorkspace =
@@ -184,6 +188,16 @@ export function DashboardShell({
           </div>
         </div>
       </header>
+
+      <div className="px-gap-md pt-gap-md md:px-gap-lg">
+        <DashboardBreadcrumbs
+          pathname={pathname}
+          workspaceId={workspaceId}
+          workspaceName={workspaceName}
+          boardId={routeBoardId}
+          boardName={routeBoard?.title}
+        />
+      </div>
 
       {/* Mobile Navigation */}
       <DashboardMobileNav
