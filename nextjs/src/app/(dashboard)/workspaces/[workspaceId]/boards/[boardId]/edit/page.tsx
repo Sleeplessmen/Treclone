@@ -14,8 +14,9 @@ import { AlertCircle, Loader2 } from 'lucide-react';
 export default function BoardEditPage() {
   const router = useRouter();
   const params = useParams();
-  const workspaceId = params.workspaceId as string;
-  const boardId = params.boardId as string;
+  const workspaceId =
+    typeof params?.workspaceId === 'string' ? params.workspaceId : '';
+  const boardId = typeof params?.boardId === 'string' ? params.boardId : '';
 
   const [formData, setFormData] = useState({ title: '', description: '' });
   const [showError, setShowError] = useState(false);

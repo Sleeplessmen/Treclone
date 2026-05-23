@@ -13,7 +13,8 @@ import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-heade
 
 export default function BoardsPage() {
   const params = useParams();
-  const workspaceId = params.workspaceId as string;
+  const workspaceId =
+    typeof params?.workspaceId === 'string' ? params.workspaceId : '';
 
   const [showCreateModal, setShowCreateModal] = useState(false);
 

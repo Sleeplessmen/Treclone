@@ -30,8 +30,8 @@ export function DashboardShell({
   readonly children: React.ReactNode;
 }) {
   const router = useRouter();
-  const pathname = usePathname();
-  const params = useParams();
+  const pathname = usePathname() ?? '';
+  const params = useParams() ?? {};
   const { user, logout, isLoading } = useAuth();
   const { data: workspacesData } = useWorkspaces();
   const [searchValue, setSearchValue] = useState('');

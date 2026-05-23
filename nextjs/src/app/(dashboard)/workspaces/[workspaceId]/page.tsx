@@ -15,7 +15,8 @@ import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-heade
 
 export default function WorkspaceDetailPage() {
   const params = useParams();
-  const workspaceId = params.workspaceId as string;
+  const workspaceId =
+    typeof params?.workspaceId === 'string' ? params.workspaceId : '';
   const [showCreateBoardModal, setShowCreateBoardModal] = useState(false);
 
   // Queries

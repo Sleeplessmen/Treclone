@@ -19,8 +19,9 @@ import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-heade
 
 export default function BoardMembersPage() {
   const params = useParams();
-  const workspaceId = params.workspaceId as string;
-  const boardId = params.boardId as string;
+  const workspaceId =
+    typeof params?.workspaceId === 'string' ? params.workspaceId : '';
+  const boardId = typeof params?.boardId === 'string' ? params.boardId : '';
 
   const { data, isLoading, error } = useBoardMembers(workspaceId, boardId);
   const addMemberMutation = useAddBoardMember(workspaceId, boardId);

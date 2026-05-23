@@ -26,8 +26,9 @@ interface CardItem {
 export default function CardsPage() {
   const params = useParams();
 
-  const workspaceId = params.workspaceId as string;
-  const boardId = params.boardId as string;
+  const workspaceId =
+    typeof params?.workspaceId === 'string' ? params.workspaceId : '';
+  const boardId = typeof params?.boardId === 'string' ? params.boardId : '';
 
   const [search, setSearch] = useState('');
   const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);

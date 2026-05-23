@@ -18,7 +18,8 @@ interface Activity {
 
 export default function ActivityPage() {
   const params = useParams();
-  const workspaceId = params.workspaceId as string;
+  const workspaceId =
+    typeof params?.workspaceId === 'string' ? params.workspaceId : '';
 
   const { data, isLoading, error } = useWorkspaceActivities(workspaceId);
   const activities: Activity[] = data?.activities || [];

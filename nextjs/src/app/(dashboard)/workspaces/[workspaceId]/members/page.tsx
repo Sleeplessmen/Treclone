@@ -15,7 +15,8 @@ import { UserPlus, Trash2 } from 'lucide-react';
 
 export default function MembersPage() {
   const params = useParams();
-  const workspaceId = params.workspaceId as string;
+  const workspaceId =
+    typeof params?.workspaceId === 'string' ? params.workspaceId : '';
 
   const { data, isLoading, error } = useWorkspaceMembers(workspaceId);
   const addMemberMutation = useAddWorkspaceMember(workspaceId);
