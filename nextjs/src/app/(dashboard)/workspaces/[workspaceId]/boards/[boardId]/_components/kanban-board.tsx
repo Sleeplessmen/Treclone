@@ -12,6 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useLists, useCreateList, useDeleteList } from '@/hooks/lists';
 import { useDeleteCard } from '@/hooks/cards';
 import { useBoard } from '@/hooks/boards';
+import { CardEditModal } from '../cards/_components/card-edit-modal';
+import { EditListModal } from './edit-list-modal';
 import {
   CalendarDays,
   Columns3,
@@ -32,6 +34,9 @@ interface CardItem {
   description?: string | null;
   position: number;
   listId: string;
+  assigneeId?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface KanbanBoardProps {
@@ -95,6 +100,13 @@ export function KanbanBoard({
   const [showAddListModal, setShowAddListModal] = useState(false);
   const [showAddCardModal, setShowAddCardModal] = useState(false);
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
+  const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);
+  const [selectedList, setSelectedList] = useState<{
+    id: string;
+    title: string;
+    position: number;
+    boardId: string;
+  } | null>(null);
   const [listToDelete, setListToDelete] = useState<{
     id: string;
     title: string;
@@ -431,6 +443,7 @@ export function KanbanBoard({
                   setListToDelete({ id: listId, title })
                 }
                 onDeleteCard={setCardToDelete}
+                onOpenCard={(card) => setSelectedCard(card)}
               />
             ))}
 
@@ -469,6 +482,37 @@ export function KanbanBoard({
             }));
             setShowAddCardModal(false);
             setSelectedListId(null);
+          }}
+        />
+      )}
+
+      {selectedList && (
+        <EditListModal
+          workspaceId={workspaceId}
+          boardId={boardId}
+          list={selectedList}
+          isOpen={!!selectedList}
+          onClose={() => setSelectedList(null)}
+          onSuccess={() => {
+            setSelectedList(null);
+          }}
+        />
+      )}
+
+      {selectedCard && (
+        <CardEditModal
+          isOpen={!!selectedCard}
+          workspaceId={workspaceId}
+          boardId={boardId}
+          card={{
+            ...selectedCard,
+            assigneeId: selectedCard.assigneeId,
+            createdAt: selectedCard.createdAt ?? new Date().toISOString(),
+            updatedAt: selectedCard.updatedAt ?? new Date().toISOString(),
+          }}
+          onClose={() => setSelectedCard(null)}
+          onSuccess={() => {
+            setSelectedCard(null);
           }}
         />
       )}

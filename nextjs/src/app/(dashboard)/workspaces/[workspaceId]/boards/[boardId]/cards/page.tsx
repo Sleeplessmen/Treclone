@@ -263,7 +263,7 @@ export default function CardsPage() {
                         setSelectedCard(card);
                       }}
                     >
-                      Edit
+                      Open
                     </Button>
                   </div>
                 </CardContent>

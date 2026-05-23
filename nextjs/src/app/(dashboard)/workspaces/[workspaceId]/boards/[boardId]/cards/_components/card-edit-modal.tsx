@@ -40,10 +40,8 @@ export function CardEditModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-2xl" showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle>Edit Card</DialogTitle>
-          <DialogDescription>
-            Update the card details or delete the card.
-          </DialogDescription>
+          <DialogTitle>Card Details</DialogTitle>
+          <DialogDescription>View, edit, or delete the card.</DialogDescription>
         </DialogHeader>
 
         <CardDetailForm

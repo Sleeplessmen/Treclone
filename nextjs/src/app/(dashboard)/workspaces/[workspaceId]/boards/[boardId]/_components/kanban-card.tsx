@@ -10,17 +10,22 @@ interface Card {
   description?: string | null;
   position: number;
   listId: string;
+  assigneeId?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface KanbanCardProps {
   card: Card;
   index: number;
+  onOpen: (card: Card) => void;
   onDelete: (card: Card) => void;
 }
 
 export function KanbanCard({
   card,
   index,
+  onOpen,
   onDelete,
 }: Readonly<KanbanCardProps>) {
   return (
@@ -29,16 +34,22 @@ export function KanbanCard({
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
-          {...provided.dragHandleProps}
           className={cn(
-            'bg-surface-2 p-gap-md rounded-sm cursor-grab hover:shadow-sm transition-shadow active:cursor-grabbing',
+            'relative bg-surface-2 p-gap-md rounded-sm hover:shadow-sm transition-shadow',
             snapshot.isDragging && 'shadow-lg ring-1 ring-hairline-ghost'
           )}
         >
-          <div className="flex items-start justify-between gap-gap-sm">
+          <button
+            type="button"
+            {...provided.dragHandleProps}
+            onClick={() => onOpen(card)}
+            className="flex w-full cursor-grab items-start justify-between gap-gap-sm text-left active:cursor-grabbing"
+          >
             <p className="min-w-0 break-words text-body text-ink">
               {card.title}
             </p>
+          </button>
+          <div className="absolute right-gap-sm top-gap-sm">
             <button
               type="button"
               onPointerDown={(event) => event.stopPropagation()}

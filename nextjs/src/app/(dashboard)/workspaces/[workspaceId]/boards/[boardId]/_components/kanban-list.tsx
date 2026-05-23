@@ -3,7 +3,7 @@
 import { Droppable } from '@hello-pangea/dnd';
 import { cn } from '@/lib/utils/cn';
 import { KanbanCard } from './kanban-card';
-import { Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 
 interface Card {
   id: string;
@@ -11,6 +11,9 @@ interface Card {
   description?: string | null;
   position: number;
   listId: string;
+  assigneeId?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface KanbanListProps {
@@ -18,8 +21,10 @@ interface KanbanListProps {
   title: string;
   cards: Card[];
   onAddCard: (listId: string) => void;
+  onEditList: (listId: string, title: string) => void;
   onDeleteList: (listId: string, title: string) => void;
   onDeleteCard: (card: Card) => void;
+  onOpenCard: (card: Card) => void;
 }
 
 export function KanbanList({
@@ -27,8 +32,10 @@ export function KanbanList({
   title,
   cards,
   onAddCard,
+  onEditList,
   onDeleteList,
   onDeleteCard,
+  onOpenCard,
 }: Readonly<KanbanListProps>) {
   return (
     <div className="min-w-0 bg-surface-1 rounded-sm p-gap-md">
@@ -36,14 +43,24 @@ export function KanbanList({
         <h2 className="truncate text-title-md font-heading text-ink">
           {title}
         </h2>
-        <button
-          type="button"
-          onClick={() => onDeleteList(listId, title)}
-          className="rounded-sm p-gap-xs text-destructive transition-colors hover:bg-destructive/10"
-          aria-label={`Delete list ${title}`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
+        <div className="flex items-center gap-gap-xs">
+          <button
+            type="button"
+            onClick={() => onEditList(listId, title)}
+            className="rounded-sm p-gap-xs text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink"
+            aria-label={`Edit list ${title}`}
+          >
+            <Pencil className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => onDeleteList(listId, title)}
+            className="rounded-sm p-gap-xs text-destructive transition-colors hover:bg-destructive/10"
+            aria-label={`Delete list ${title}`}
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
       </div>
       <Droppable droppableId={listId}>
         {(provided, snapshot) => (
@@ -60,6 +77,7 @@ export function KanbanList({
                 key={card.id}
                 card={card}
                 index={index}
+                onOpen={onOpenCard}
                 onDelete={onDeleteCard}
               />
             ))}
