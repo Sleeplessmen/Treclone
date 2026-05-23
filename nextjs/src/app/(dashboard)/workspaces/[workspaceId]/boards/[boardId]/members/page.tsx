@@ -6,6 +6,7 @@ import {
   useAddBoardMember,
   useBoardMembers,
   useRemoveBoardMember,
+  BoardMemberRole,
 } from '@/hooks/board-members';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,7 +28,7 @@ export default function BoardMembersPage() {
 
   const [emailInput, setEmailInput] = useState('');
   const [selectedEmail, setSelectedEmail] = useState('');
-  const [role, setRole] = useState<'admin' | 'editor' | 'viewer'>('viewer');
+  const [role, setRole] = useState<BoardMemberRole>('viewer');
 
   const members = data?.data ?? [];
 
@@ -138,9 +139,7 @@ export default function BoardMembersPage() {
                 id="role"
                 className="h-10 rounded-sm border border-hairline-ghost bg-canvas px-gap-md text-body"
                 value={role}
-                onChange={(e) =>
-                  setRole(e.target.value as 'admin' | 'editor' | 'viewer')
-                }
+                onChange={(e) => setRole(e.target.value as BoardMemberRole)}
               >
                 <option value="viewer">Viewer</option>
                 <option value="editor">Editor</option>
@@ -191,7 +190,7 @@ function BoardMemberRow({
     id: string;
     userId: string;
     boardId: string;
-    role: 'admin' | 'editor' | 'viewer';
+    role: BoardMemberRole;
     user: {
       id: string;
       email: string;
