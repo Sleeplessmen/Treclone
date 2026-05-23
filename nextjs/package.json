@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "test": "vitest --config vitest.unit.config.ts",
@@ -13,7 +13,8 @@
     "test:integration": "vitest --config vitest.integration.config.ts --run",
     "test:all": "npm run test:unit && npm run test:integration",
     "test:coverage": "vitest --config vitest.unit.config.ts --run --coverage",
-    "test:ui": "vitest --config vitest.unit.config.ts --ui"
+    "test:ui": "vitest --config vitest.unit.config.ts --ui",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@faker-js/faker": "^10.4.0",
