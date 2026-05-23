@@ -7,7 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Trash2 } from 'lucide-react';
+import {
+  ArrowRight,
+  BarChart3,
+  ListTodo,
+  Plus,
+  Trash2,
+  Users,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -26,6 +33,16 @@ export default function WorkspaceDetailPage() {
   const createBoardMutation = useCreateBoard(workspaceId);
 
   const boards = boardsData?.boards || [];
+  const hasBoards = boards.length > 0;
+  const boardCount = boards.length;
+  const listCount = boards.reduce(
+    (total, board) => total + (board._count?.lists || 0),
+    0
+  );
+  const cardCount = boards.reduce(
+    (total, board) => total + (board._count?.cards || 0),
+    0
+  );
 
   // Handle create board
   const handleCreateBoard = (data: { title: string; description: string }) => {
@@ -62,7 +79,7 @@ export default function WorkspaceDetailPage() {
   const boardsContent =
     boards.length > 0 ? (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gap-lg">
-        {boards.map((board: any) => (
+        {boards.map((board) => (
           <Card
             key={board.id}
             className="hover:shadow-md transition-shadow cursor-pointer group"
@@ -98,19 +115,46 @@ export default function WorkspaceDetailPage() {
       </div>
     ) : (
       <Card>
-        <CardContent className="py-gap-xl text-center">
-          <p className="text-body text-ink-muted mb-gap-md">
-            No boards yet. Create one to get started!
-          </p>
+        <CardContent className="py-gap-xl text-center space-y-gap-md">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-sm bg-primary/10 text-primary">
+            <ListTodo className="h-6 w-6" />
+          </div>
+          <div className="space-y-gap-sm">
+            <p className="text-headline-sm font-heading text-ink">
+              No boards yet
+            </p>
+            <p className="text-body text-ink-muted">
+              Create the first board to start organizing this workspace.
+            </p>
+          </div>
           <Button
             variant="default"
             onClick={() => setShowCreateBoardModal(true)}
           >
+            <Plus className="h-4 w-4 mr-gap-sm" />
             Create Your First Board
           </Button>
         </CardContent>
       </Card>
     );
+
+  const boardsSkeletons = (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gap-lg">
+      {['board-skeleton-1', 'board-skeleton-2', 'board-skeleton-3'].map(
+        (id) => (
+          <Card key={id}>
+            <CardContent className="pt-gap-lg space-y-gap-md">
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-9 w-full" />
+            </CardContent>
+          </Card>
+        )
+      )}
+    </div>
+  );
+
+  const boardsSection = boardsLoading ? boardsSkeletons : boardsContent;
 
   return (
     <main className="space-y-gap-lg">
@@ -118,33 +162,128 @@ export default function WorkspaceDetailPage() {
         title={workspace?.name || 'Workspace'}
         description={workspace?.description || 'Manage your boards and tasks'}
         actions={
-          <Button
-            variant="default"
-            className="w-full sm:w-auto"
-            onClick={() => setShowCreateBoardModal(true)}
-          >
-            <Plus className="h-4 w-4 mr-gap-sm" />
-            New Board
-          </Button>
+          hasBoards ? (
+            <div className="flex w-full flex-col gap-gap-sm sm:flex-row sm:w-auto sm:flex-wrap sm:items-center">
+              <Button variant="outline" className="w-full sm:w-auto" asChild>
+                <a href={`/workspaces/${workspaceId}/activity`}>
+                  Activity
+                  <ArrowRight className="ml-gap-sm h-4 w-4" />
+                </a>
+              </Button>
+              <Button
+                variant="default"
+                className="w-full sm:w-auto"
+                onClick={() => setShowCreateBoardModal(true)}
+              >
+                <Plus className="h-4 w-4 mr-gap-sm" />
+                New Board
+              </Button>
+            </div>
+          ) : undefined
         }
       />
-      {/* Boards Grid */}
-      {boardsLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gap-lg">
-          {['board-skeleton-1', 'board-skeleton-2', 'board-skeleton-3'].map(
-            (id) => (
-              <Card key={id}>
-                <CardContent className="pt-gap-lg space-y-gap-md">
-                  <Skeleton className="h-6 w-32" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-9 w-full" />
-                </CardContent>
-              </Card>
-            )
-          )}
-        </div>
+
+      <section className="grid gap-gap-md md:grid-cols-3">
+        <Card>
+          <CardContent className="flex items-center gap-gap-md pt-gap-lg">
+            <div className="rounded-sm bg-primary/10 p-gap-sm text-primary">
+              <ListTodo className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-label-sm uppercase tracking-wide text-ink-muted">
+                Boards
+              </p>
+              <p className="text-headline-sm font-heading text-ink">
+                {boardCount}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-gap-md pt-gap-lg">
+            <div className="rounded-sm bg-primary/10 p-gap-sm text-primary">
+              <BarChart3 className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-label-sm uppercase tracking-wide text-ink-muted">
+                Lists
+              </p>
+              <p className="text-headline-sm font-heading text-ink">
+                {listCount}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-gap-md pt-gap-lg">
+            <div className="rounded-sm bg-primary/10 p-gap-sm text-primary">
+              <Users className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-label-sm uppercase tracking-wide text-ink-muted">
+                Cards
+              </p>
+              <p className="text-headline-sm font-heading text-ink">
+                {cardCount}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      {hasBoards ? (
+        <section className="grid gap-gap-lg lg:grid-cols-[minmax(0,1.6fr)_minmax(320px,0.9fr)]">
+          <div className="space-y-gap-md">
+            <div className="flex items-end justify-between gap-gap-md">
+              <div>
+                <h2 className="text-headline-sm font-heading text-ink">
+                  Boards
+                </h2>
+                <p className="text-body text-ink-muted">
+                  Open a board to manage its lists and cards.
+                </p>
+              </div>
+              <Button asChild variant="ghost" size="sm">
+                <a href={`/workspaces/${workspaceId}/boards`}>
+                  View all
+                  <ArrowRight className="ml-gap-sm h-4 w-4" />
+                </a>
+              </Button>
+            </div>
+
+            {boardsSection}
+          </div>
+
+          <Card className="h-fit">
+            <CardContent className="space-y-gap-md pt-gap-lg">
+              <div>
+                <h3 className="text-title-md font-heading text-ink">
+                  Workspace shortcuts
+                </h3>
+                <p className="text-body text-ink-muted">
+                  Common actions for this workspace.
+                </p>
+              </div>
+              <div className="grid gap-gap-sm">
+                <Button asChild variant="outline" className="justify-start">
+                  <a href={`/workspaces/${workspaceId}/members`}>
+                    Manage members
+                  </a>
+                </Button>
+                <Button asChild variant="outline" className="justify-start">
+                  <a href={`/workspaces/${workspaceId}/settings`}>
+                    Workspace settings
+                  </a>
+                </Button>
+                <Button asChild variant="outline" className="justify-start">
+                  <a href={`/workspaces/${workspaceId}/edit`}>Edit workspace</a>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
       ) : (
-        boardsContent
+        boardsSection
       )}
       {/* Create Board Modal */}
       {showCreateBoardModal && (

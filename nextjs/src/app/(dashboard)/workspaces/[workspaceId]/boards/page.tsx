@@ -8,7 +8,13 @@ import { CreateBoardModal } from './_components/create-board-modal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, AlertCircle } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowRight,
+  BarChart3,
+  ListTodo,
+  Plus,
+} from 'lucide-react';
 import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
 
 export default function BoardsPage() {
@@ -22,6 +28,15 @@ export default function BoardsPage() {
   const { data: boardsData, isLoading, error } = useBoards(workspaceId);
 
   const boards = boardsData?.boards || [];
+  const boardCount = boards.length;
+  const listCount = boards.reduce(
+    (total, board) => total + (board._count?.lists || 0),
+    0
+  );
+  const cardCount = boards.reduce(
+    (total, board) => total + (board._count?.cards || 0),
+    0
+  );
 
   if (isLoading) {
     return (
@@ -57,7 +72,7 @@ export default function BoardsPage() {
     <main className="space-y-gap-lg">
       <DashboardPageHeader
         title="My Boards"
-        description="Manage and organize your tasks across different boards"
+        description="Manage and organize tasks across your workspace boards"
         actions={
           <Button
             variant="default"
@@ -69,6 +84,54 @@ export default function BoardsPage() {
           </Button>
         }
       />
+
+      <section className="grid gap-gap-md md:grid-cols-3">
+        <Card>
+          <CardContent className="flex items-center gap-gap-md pt-gap-lg">
+            <div className="rounded-sm bg-primary/10 p-gap-sm text-primary">
+              <ListTodo className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-label-sm uppercase tracking-wide text-ink-muted">
+                Boards
+              </p>
+              <p className="text-headline-sm font-heading text-ink">
+                {boardCount}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-gap-md pt-gap-lg">
+            <div className="rounded-sm bg-primary/10 p-gap-sm text-primary">
+              <BarChart3 className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-label-sm uppercase tracking-wide text-ink-muted">
+                Lists
+              </p>
+              <p className="text-headline-sm font-heading text-ink">
+                {listCount}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-gap-md pt-gap-lg">
+            <div className="rounded-sm bg-primary/10 p-gap-sm text-primary">
+              <ArrowRight className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-label-sm uppercase tracking-wide text-ink-muted">
+                Cards
+              </p>
+              <p className="text-headline-sm font-heading text-ink">
+                {cardCount}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
 
       {/* Error State */}
       {error && (
@@ -99,11 +162,20 @@ export default function BoardsPage() {
         </div>
       ) : (
         <Card>
-          <CardContent className="pt-gap-lg text-center py-gap-xl space-y-gap-md">
-            <p className="text-body text-ink-muted">
-              No boards yet. Create your first board to get started.
-            </p>
-            <Button variant="outline" onClick={() => setShowCreateModal(true)}>
+          <CardContent className="py-gap-xl text-center space-y-gap-md">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-sm bg-primary/10 text-primary">
+              <ListTodo className="h-6 w-6" />
+            </div>
+            <div className="space-y-gap-sm">
+              <p className="text-headline-sm font-heading text-ink">
+                No boards yet
+              </p>
+              <p className="text-body text-ink-muted">
+                Create the first board to start breaking work into lists and
+                cards.
+              </p>
+            </div>
+            <Button variant="default" onClick={() => setShowCreateModal(true)}>
               <Plus className="h-4 w-4 mr-gap-sm" />
               Create Board
             </Button>

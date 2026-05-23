@@ -26,17 +26,22 @@ export default async function MarketingHomePage() {
           <div className="mx-auto flex max-w-6xl flex-col gap-gap-sm rounded-sm bg-surface-2 p-gap-md text-center md:flex-row md:items-center md:justify-between md:text-left">
             <div>
               <p className="text-label-sm font-semibold uppercase tracking-wide text-primary">
-                Chào mừng trở lại!
+                Chào mừng bạn quay trở lại!
               </p>
               <p className="text-body text-ink-muted">
                 Bạn đã đăng nhập. Hãy tiếp tục quản lý công việc và dự án của
                 bạn.
               </p>
             </div>
-            <Button asChild variant="default" size="lg">
-              <Link href="/workspaces">
+            <Button
+              asChild
+              variant="default"
+              size="lg"
+              className="w-full max-w-full whitespace-normal px-gap-md text-xs leading-tight sm:w-auto sm:max-w-none sm:whitespace-nowrap sm:px-8 sm:text-sm"
+            >
+              <Link href="/workspaces" className="justify-center text-center">
                 Đi tới Không gian làm việc của bạn
-                <ArrowRight className="ml-gap-sm h-4 w-4" />
+                <ArrowRight className="ml-gap-sm h-4 w-4 shrink-0" />
               </Link>
             </Button>
           </div>

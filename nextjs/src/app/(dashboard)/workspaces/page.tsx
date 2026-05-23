@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Settings, Trash, Users } from 'lucide-react';
+import { Plus, SquarePen, Trash, Users } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 
 interface DisplayWorkspace {
@@ -135,7 +135,7 @@ export default function WorkspacesPage() {
                     </Button>
                     <Button asChild variant="ghost" size="icon-sm">
                       <a href={`/workspaces/${workspace.id}/edit`}>
-                        <Settings className="w-4 h-4" />
+                        <SquarePen className="w-4 h-4" />
                       </a>
                     </Button>
                     <DeleteWorkspaceButton
