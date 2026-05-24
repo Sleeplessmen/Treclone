@@ -34,29 +34,27 @@ export function KanbanCard({
   onDelete,
 }: Readonly<KanbanCardProps>) {
   return (
-    <Draggable draggableId={card.id} index={index}>
+    <Draggable draggableId={`card-${card.id}`} index={index}>
       {(provided, snapshot) => (
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          role="button"
+          tabIndex={0}
+          onClick={() => onOpen(card)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              onOpen(card);
+            }
+          }}
           className={cn(
-            'relative bg-surface-2 p-gap-md rounded-sm hover:shadow-sm transition-shadow',
+            'relative cursor-grab bg-surface-2 p-gap-md rounded-sm hover:shadow-sm transition-shadow active:cursor-grabbing',
             snapshot.isDragging && 'shadow-lg ring-1 ring-hairline-ghost'
           )}
         >
-          <div
-            role="button"
-            tabIndex={0}
-            {...provided.dragHandleProps}
-            onClick={() => onOpen(card)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                onOpen(card);
-              }
-            }}
-            className="flex w-full cursor-grab items-start justify-between gap-gap-sm text-left active:cursor-grabbing"
-          >
+          <div className="flex w-full items-start justify-between gap-gap-sm text-left">
             <p className="min-w-0 break-words text-body text-ink">
               {card.title}
             </p>
