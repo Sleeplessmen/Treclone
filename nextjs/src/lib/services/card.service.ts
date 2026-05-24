@@ -34,6 +34,37 @@ export class CardService {
         return board
     }
 
+    private async assertAssigneeAccess(
+        board: { ownerId: bigint; workspaceId: bigint | null },
+        assigneeUserId: bigint | null
+    ) {
+        if (assigneeUserId === null) {
+            return
+        }
+
+        if (assigneeUserId === board.ownerId) {
+            return
+        }
+
+        const member = board.workspaceId
+            ? await prisma.workspaceMember.findFirst({
+                where: {
+                    workspaceId: board.workspaceId,
+                    userId: assigneeUserId,
+                },
+                select: { id: true },
+            })
+            : null
+
+        if (!member) {
+            throw new AuthError(
+                'Assignee must be a member of this workspace',
+                400,
+                AuthErrorCode.VALIDATION_ERROR
+            )
+        }
+    }
+
     async getCardsByListId(listId: bigint, userId: bigint) {
         try {
             const list = await prisma.list.findUnique({
@@ -91,10 +122,14 @@ export class CardService {
                 throw new AuthError('List not found', 404, AuthErrorCode.USER_NOT_FOUND)
             }
 
-            await this.assertBoardAccess(list.boardId, userId)
+            const board = await this.assertBoardAccess(list.boardId, userId)
 
             const validatedData = createCardSchema.parse(credentials)
             const title = validatedData.title.trim()
+            await this.assertAssigneeAccess(
+                board,
+                validatedData.assigneeUserId ?? null
+            )
 
             const existingCard = await prisma.card.findFirst({
                 where: {
@@ -126,7 +161,7 @@ export class CardService {
                 title,
                 description: validatedData.description,
                 position,
-                assigneeUserId: validatedData.assigneeUserId,
+                assigneeUserId: validatedData.assigneeUserId ?? null,
             })
 
             return card
@@ -148,14 +183,14 @@ export class CardService {
                 throw new AuthError('Card not found', 404, AuthErrorCode.USER_NOT_FOUND)
             }
 
-            await this.assertBoardAccess(card.list.boardId, userId)
+            const board = await this.assertBoardAccess(card.list.boardId, userId)
 
             const validatedData = updateCardSchema.parse(credentials)
 
             const updateData: {
                 title?: string
                 description?: string
-                assigneeUserId?: bigint
+                assigneeUserId?: bigint | null
             } = {}
 
             if (validatedData.title !== undefined) {
@@ -186,6 +221,7 @@ export class CardService {
             }
 
             if (validatedData.assigneeUserId !== undefined) {
+                await this.assertAssigneeAccess(board, validatedData.assigneeUserId)
                 updateData.assigneeUserId = validatedData.assigneeUserId
             }
 

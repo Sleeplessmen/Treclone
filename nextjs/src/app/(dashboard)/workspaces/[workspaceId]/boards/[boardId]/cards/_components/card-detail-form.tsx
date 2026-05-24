@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -9,15 +9,20 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useUpdateCard, useDeleteCard } from '@/hooks/cards';
-import { useBoardMembers } from '@/hooks/board-members';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import {
+  useUpdateCard,
+  useDeleteCard,
+  useCardComments,
+  useCreateCardComment,
+} from '@/hooks/cards';
+import { useWorkspaceMembers } from '@/hooks/workspace-members';
+import { AlertCircle, Loader2, MessageSquare, Send } from 'lucide-react';
 import { z } from 'zod';
 
 const updateCardFormSchema = z.object({
   title: z.string().min(1, 'Card title is required').max(255).optional(),
   description: z.string().max(1000).optional(),
-  assigneeUserId: z.string().optional(),
+  assigneeUserId: z.string().nullable().optional(),
 });
 
 type UpdateCardFormInput = z.infer<typeof updateCardFormSchema>;
@@ -46,11 +51,15 @@ export function CardDetailForm({
   onCancel,
 }: Readonly<CardDetailFormProps>) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [commentContent, setCommentContent] = useState('');
 
-  const { data: membersData, isLoading: membersLoading } = useBoardMembers(
-    workspaceId,
-    boardId
-  );
+  const { data: membersData, isLoading: membersLoading } =
+    useWorkspaceMembers(workspaceId);
+  const {
+    data: commentsData,
+    isLoading: commentsLoading,
+    error: commentsError,
+  } = useCardComments(workspaceId, boardId, card.listId, card.id);
   const updateMutation = useUpdateCard(
     workspaceId,
     boardId,
@@ -58,6 +67,12 @@ export function CardDetailForm({
     card.id
   );
   const deleteMutation = useDeleteCard(
+    workspaceId,
+    boardId,
+    card.listId,
+    card.id
+  );
+  const createCommentMutation = useCreateCardComment(
     workspaceId,
     boardId,
     card.listId,
@@ -76,7 +91,7 @@ export function CardDetailForm({
     defaultValues: {
       title: card.title,
       description: card.description || '',
-      assigneeUserId: card.assigneeId || '',
+      assigneeUserId: card.assigneeId || null,
     },
   });
 
@@ -84,19 +99,45 @@ export function CardDetailForm({
     reset({
       title: card.title,
       description: card.description || '',
-      assigneeUserId: card.assigneeId || '',
+      assigneeUserId: card.assigneeId || null,
     });
     setShowDeleteConfirm(false);
   }, [card, reset]);
 
   const assigneeId = watch('assigneeUserId');
   const members = Array.isArray(membersData?.data) ? membersData.data : [];
+  const comments = commentsData?.data?.comments ?? [];
+
   const onSubmit = (formData: UpdateCardFormInput) => {
-    updateMutation.mutate(formData, {
+    updateMutation.mutate(
+      {
+        ...formData,
+        assigneeUserId: formData.assigneeUserId || null,
+      },
+      {
       onSuccess: () => {
         onSuccess?.();
       },
-    });
+      }
+    );
+  };
+
+  const handleCommentSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const content = commentContent.trim();
+
+    if (!content) {
+      return;
+    }
+
+    createCommentMutation.mutate(
+      { content },
+      {
+        onSuccess: () => {
+          setCommentContent('');
+        },
+      }
+    );
   };
 
   const handleDelete = () => {
@@ -173,14 +214,14 @@ export function CardDetailForm({
                   className="w-full px-gap-md py-gap-sm border border-hairline-ghost rounded-sm text-body font-body disabled:opacity-50"
                   value={assigneeId?.toString() || ''}
                   onChange={(e) => {
-                    setValue('assigneeUserId', e.target.value);
+                    setValue('assigneeUserId', e.target.value || null);
                   }}
                   disabled={isLoading}
                 >
                   <option value="">Unassigned</option>
                   {members.map((member) => (
                     <option key={member.userId} value={member.userId}>
-                      {member.user.fullName}
+                      {member.user.name}
                     </option>
                   ))}
                 </select>
@@ -209,6 +250,89 @@ export function CardDetailForm({
               </Button>
             </div>
           </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-gap-sm">
+            <MessageSquare className="h-5 w-5" />
+            Comments
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-gap-lg">
+          <form onSubmit={handleCommentSubmit} className="space-y-gap-sm">
+            <Label htmlFor="comment">Add a comment</Label>
+            <textarea
+              id="comment"
+              placeholder="Write a comment..."
+              className="w-full px-gap-md py-gap-sm border border-hairline-ghost rounded-sm text-body font-body disabled:opacity-50"
+              value={commentContent}
+              onChange={(event) => setCommentContent(event.target.value)}
+              disabled={createCommentMutation.isPending}
+              rows={3}
+              maxLength={1000}
+            />
+            {createCommentMutation.error && (
+              <p className="text-destructive text-label-sm">
+                {createCommentMutation.error.message}
+              </p>
+            )}
+            <div className="flex justify-end">
+              <Button
+                type="submit"
+                disabled={
+                  createCommentMutation.isPending || !commentContent.trim()
+                }
+                className="flex items-center gap-gap-sm"
+              >
+                {createCommentMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+                Comment
+              </Button>
+            </div>
+          </form>
+
+          {commentsError && (
+            <p className="text-destructive text-label-sm">
+              {commentsError.message}
+            </p>
+          )}
+
+          <div className="space-y-gap-md">
+            {commentsLoading ? (
+              <>
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
+              </>
+            ) : comments.length > 0 ? (
+              comments.map((comment) => (
+                <div
+                  key={comment.id}
+                  className="rounded-sm border border-hairline-ghost bg-surface-1 p-gap-md"
+                >
+                  <div className="mb-gap-sm flex flex-wrap items-center gap-gap-sm">
+                    <span className="text-body font-semibold text-ink">
+                      {comment.user.fullName}
+                    </span>
+                    <span className="text-label-sm text-ink-muted">
+                      {new Date(comment.createdAt).toLocaleString()}
+                    </span>
+                  </div>
+                  <p className="whitespace-pre-wrap break-words text-body text-ink">
+                    {comment.content}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-label-sm text-ink-muted">
+                No comments yet.
+              </p>
+            )}
+          </div>
         </CardContent>
       </Card>
 

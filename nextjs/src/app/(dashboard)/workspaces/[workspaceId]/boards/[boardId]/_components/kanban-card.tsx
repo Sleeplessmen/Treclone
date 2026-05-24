@@ -2,7 +2,7 @@
 
 import { Draggable } from '@hello-pangea/dnd';
 import { cn } from '@/lib/utils/cn';
-import { Trash2 } from 'lucide-react';
+import { Trash2, UserRound } from 'lucide-react';
 
 interface Card {
   id: string;
@@ -11,6 +11,11 @@ interface Card {
   position: number;
   listId: string;
   assigneeId?: string;
+  assignee?: {
+    id: string;
+    email: string;
+    fullName: string;
+  } | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -74,6 +79,12 @@ export function KanbanCard({
             <p className="text-label-sm text-ink-muted mt-gap-sm break-words">
               {card.description}
             </p>
+          )}
+          {card.assignee && (
+            <div className="mt-gap-md flex items-center gap-gap-xs text-label-sm text-ink-muted">
+              <UserRound className="h-3.5 w-3.5" />
+              <span className="truncate">{card.assignee.fullName}</span>
+            </div>
           )}
         </div>
       )}

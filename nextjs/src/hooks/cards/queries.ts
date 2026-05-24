@@ -23,6 +23,28 @@ interface FetchCardResponse {
     data: Card
 }
 
+interface CardComment {
+    id: string
+    cardId: string
+    userId: string
+    content: string
+    createdAt: string
+    updatedAt: string
+    user: {
+        id: string
+        email: string
+        fullName: string
+    }
+}
+
+interface FetchCardCommentsResponse {
+    success: boolean
+    data: {
+        message: string
+        comments: CardComment[]
+    }
+}
+
 // Fetch all cards in a list
 export function useCards(
     workspaceId: string,
@@ -131,4 +153,37 @@ export function useCardByBoardId(
         isLoading,
         error,
     }
+}
+
+export function useCardComments(
+    workspaceId: string,
+    boardId: string,
+    listId: string,
+    cardId: string
+) {
+    return useQuery<FetchCardCommentsResponse, Error>({
+        queryKey: ['card-comments', workspaceId, boardId, listId, cardId],
+        queryFn: async () => {
+            const response = await fetch(
+                `/api/workspaces/${workspaceId}/boards/${boardId}/lists/${listId}/cards/${cardId}/comments`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                }
+            )
+
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(
+                    error.error || error.message || 'Failed to fetch card comments'
+                )
+            }
+
+            return response.json()
+        },
+        enabled: !!workspaceId && !!boardId && !!listId && !!cardId,
+    })
 }

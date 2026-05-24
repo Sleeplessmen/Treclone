@@ -28,12 +28,31 @@ interface CreateCardInput {
 interface UpdateCardInput {
     title?: string
     description?: string
-    assigneeUserId?: string
+    assigneeUserId?: string | null
 }
 
 interface MoveCardInput {
     listId: string
     position: number
+}
+
+interface CreateCardCommentInput {
+    content: string
+}
+
+interface CardCommentResponse {
+    success: boolean
+    data: {
+        message: string
+        comment: {
+            id: string
+            cardId: string
+            userId: string
+            content: string
+            createdAt: string
+            updatedAt: string
+        }
+    }
 }
 
 // Create card
@@ -119,6 +138,9 @@ export function useUpdateCard(
             })
             queryClient.invalidateQueries({
                 queryKey: ['all-board-cards', workspaceId, boardId],
+            })
+            queryClient.invalidateQueries({
+                queryKey: ['lists', workspaceId, boardId],
             })
         },
     })
@@ -248,6 +270,48 @@ export function useDuplicateCard(
             })
             queryClient.invalidateQueries({
                 queryKey: ['all-board-cards', workspaceId, boardId],
+            })
+        },
+    })
+}
+
+export function useCreateCardComment(
+    workspaceId: string,
+    boardId: string,
+    listId: string,
+    cardId: string
+) {
+    const queryClient = useQueryClient()
+
+    return useMutation<CardCommentResponse, Error, CreateCardCommentInput>({
+        mutationFn: async (data) => {
+            const response = await fetch(
+                `/api/workspaces/${workspaceId}/boards/${boardId}/lists/${listId}/cards/${cardId}/comments`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(data),
+                }
+            )
+
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(
+                    error.error || error.message || 'Failed to create card comment'
+                )
+            }
+
+            return response.json()
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ['card-comments', workspaceId, boardId, listId, cardId],
+            })
+            queryClient.invalidateQueries({
+                queryKey: ['workspace-activity', workspaceId],
             })
         },
     })

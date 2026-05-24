@@ -29,6 +29,7 @@ model User {
   ownedBoards      Board[]           @relation("BoardOwner")
   assignedCards    Card[]            @relation("CardAssignee")
   createdCards     Card[]            @relation("CardCreator")
+  cardComments     CardComment[]     @relation("CardCommentAuthor")
   refreshTokens    RefreshToken[]
   workspaceMembers WorkspaceMember[]
   boardMembers     BoardMember[]
@@ -103,15 +104,32 @@ model Card {
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  list     List  @relation(fields: [listId], references: [id], onDelete: Cascade)
-  assignee User? @relation("CardAssignee", fields: [assigneeUserId], references: [id], onDelete: SetNull)
-  creator  User  @relation("CardCreator", fields: [createdBy], references: [id], onDelete: Restrict)
+  list     List          @relation(fields: [listId], references: [id], onDelete: Cascade)
+  assignee User?         @relation("CardAssignee", fields: [assigneeUserId], references: [id], onDelete: SetNull)
+  creator  User          @relation("CardCreator", fields: [createdBy], references: [id], onDelete: Restrict)
+  comments CardComment[]
 
   @@unique([listId, position])
   @@index([listId])
   @@index([assigneeUserId])
   @@index([createdBy])
   @@map("cards")
+}
+
+model CardComment {
+  id        BigInt   @id @default(autoincrement())
+  cardId    BigInt   @map("card_id")
+  userId    BigInt   @map("user_id")
+  content   String   @db.VarChar(1000)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  user User @relation("CardCommentAuthor", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([cardId])
+  @@index([userId])
+  @@map("card_comments")
 }
 
 model RefreshToken {

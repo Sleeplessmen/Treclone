@@ -43,7 +43,9 @@ export function useWorkspaceMembers(workspaceId: string) {
 
             if (!response.ok) {
                 const error = await response.json()
-                throw new Error(error.message || 'Failed to fetch workspace members')
+                throw new Error(
+                    error.error || error.message || 'Failed to fetch workspace members'
+                )
             }
 
             const json = await response.json()

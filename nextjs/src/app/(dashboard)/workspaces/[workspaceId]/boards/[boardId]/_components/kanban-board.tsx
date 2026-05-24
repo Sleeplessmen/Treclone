@@ -35,6 +35,12 @@ interface CardItem {
   position: number;
   listId: string;
   assigneeId?: string;
+  assigneeUserId?: string | null;
+  assignee?: {
+    id: string;
+    email: string;
+    fullName: string;
+  } | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -152,7 +158,10 @@ export function KanbanBoard({
     const cardsMap: Record<string, CardItem[]> = {};
 
     for (const list of lists) {
-      cardsMap[list.id] = list.cards || [];
+      cardsMap[list.id] = (list.cards || []).map((card) => ({
+        ...card,
+        assigneeId: card.assigneeUserId ?? undefined,
+      }));
     }
 
     setListCards(cardsMap);

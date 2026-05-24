@@ -74,7 +74,7 @@ export class CardRepository {
             title: string
             description?: string
             position: number
-            assigneeUserId?: bigint
+            assigneeUserId?: bigint | null
         }
     ) {
         return prisma.card.create({
@@ -96,6 +96,13 @@ export class CardRepository {
                 createdBy: true,
                 createdAt: true,
                 updatedAt: true,
+                assignee: {
+                    select: {
+                        id: true,
+                        email: true,
+                        fullName: true,
+                    },
+                },
             },
         })
     }
@@ -105,7 +112,7 @@ export class CardRepository {
         data: {
             title?: string
             description?: string
-            assigneeUserId?: bigint
+            assigneeUserId?: bigint | null
         }
     ) {
         return prisma.card.update({
@@ -121,6 +128,13 @@ export class CardRepository {
                 createdBy: true,
                 createdAt: true,
                 updatedAt: true,
+                assignee: {
+                    select: {
+                        id: true,
+                        email: true,
+                        fullName: true,
+                    },
+                },
             },
         })
     }
@@ -231,6 +245,13 @@ export class CardRepository {
                     createdBy: true,
                     createdAt: true,
                     updatedAt: true,
+                    assignee: {
+                        select: {
+                            id: true,
+                            email: true,
+                            fullName: true,
+                        },
+                    },
                 },
             })
         })

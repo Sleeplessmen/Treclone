@@ -9,6 +9,11 @@ interface Card {
     position: number
     listId: string
     assigneeUserId?: string | null
+    assignee?: {
+        id: string
+        email: string
+        fullName: string
+    } | null
     createdBy?: string
     createdAt: string
     updatedAt: string

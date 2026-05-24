@@ -22,6 +22,13 @@ export class ListRepository {
                         createdBy: true,
                         createdAt: true,
                         updatedAt: true,
+                        assignee: {
+                            select: {
+                                id: true,
+                                email: true,
+                                fullName: true,
+                            },
+                        },
                     },
                     orderBy: { position: 'asc' },
                 },

@@ -14,6 +14,12 @@ interface CardItem {
   description?: string | null;
   position: number;
   listId: string;
+  assigneeUserId?: string | null;
+  assignee?: {
+    id: string;
+    email: string;
+    fullName: string;
+  } | null;
 }
 
 interface AddCardModalProps {
