@@ -439,6 +439,14 @@ export function KanbanBoard({
                 title={list.title}
                 cards={listCards[list.id] || []}
                 onAddCard={openAddCardModal}
+                onEditList={(listId, title) =>
+                  setSelectedList({
+                    id: listId,
+                    title,
+                    position: list.position,
+                    boardId: list.boardId,
+                  })
+                }
                 onDeleteList={(listId, title) =>
                   setListToDelete({ id: listId, title })
                 }
@@ -506,6 +514,7 @@ export function KanbanBoard({
           boardId={boardId}
           card={{
             ...selectedCard,
+            description: selectedCard.description ?? undefined,
             assigneeId: selectedCard.assigneeId,
             createdAt: selectedCard.createdAt ?? new Date().toISOString(),
             updatedAt: selectedCard.updatedAt ?? new Date().toISOString(),
