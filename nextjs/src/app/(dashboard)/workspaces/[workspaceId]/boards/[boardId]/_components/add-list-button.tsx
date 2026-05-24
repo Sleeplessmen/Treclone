@@ -10,7 +10,7 @@ interface AddListButtonProps {
 
 export function AddListButton({ onAdd, isLoading }: AddListButtonProps) {
   return (
-    <div className="flex items-start">
+    <div className="flex w-80 flex-none items-start">
       <Button
         variant="outline"
         onClick={onAdd}

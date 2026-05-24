@@ -2,7 +2,11 @@
 
 import Link from 'next/link';
 import { useState, useMemo, useEffect } from 'react';
-import { DragDropContext, type DropResult } from '@hello-pangea/dnd';
+import {
+  DragDropContext,
+  Droppable,
+  type DropResult,
+} from '@hello-pangea/dnd';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -43,6 +47,16 @@ interface CardItem {
   } | null;
   createdAt?: string;
   updatedAt?: string;
+}
+
+interface ListItem {
+  id: string;
+  title: string;
+  position: number;
+  boardId: string;
+  createdAt: string;
+  updatedAt: string;
+  cards?: CardItem[];
 }
 
 interface KanbanBoardProps {
@@ -98,6 +112,39 @@ function useMoveCardMutation(workspaceId: string, boardId: string) {
   });
 }
 
+function useMoveListMutation(workspaceId: string, boardId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: { listId: string; position: number }) => {
+      const response = await fetch(
+        `/api/workspaces/${workspaceId}/boards/${boardId}/lists/${data.listId}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ position: data.position }),
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(
+          error.error || error.message || 'Failed to move list'
+        );
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['lists', workspaceId, boardId],
+      });
+      queryClient.invalidateQueries({ queryKey: ['boards', workspaceId] });
+    },
+  });
+}
+
 export function KanbanBoard({
   boardId,
   workspaceId,
@@ -119,6 +166,7 @@ export function KanbanBoard({
   } | null>(null);
   const [cardToDelete, setCardToDelete] = useState<CardItem | null>(null);
   const [listCards, setListCards] = useState<Record<string, CardItem[]>>({});
+  const [orderedLists, setOrderedLists] = useState<ListItem[]>([]);
   const [isDeletingList, setIsDeletingList] = useState(false);
   const [isDeletingCard, setIsDeletingCard] = useState(false);
 
@@ -128,6 +176,7 @@ export function KanbanBoard({
   );
   const createListMutation = useCreateList(workspaceId, boardId);
   const moveCardMutation = useMoveCardMutation(workspaceId, boardId);
+  const moveListMutation = useMoveListMutation(workspaceId, boardId);
   const deleteListMutation = useDeleteList(
     workspaceId,
     boardId,
@@ -140,14 +189,18 @@ export function KanbanBoard({
     cardToDelete?.id ?? ''
   );
 
-  const lists = useMemo(
+  const lists: ListItem[] = useMemo(
     () => listsData?.data?.lists || [],
     [listsData?.data?.lists]
   );
 
   const totalCards = useMemo(
-    () => lists.reduce((count, list) => count + (list.cards?.length || 0), 0),
-    [lists]
+    () =>
+      Object.values(listCards).reduce(
+        (count, cards) => count + cards.length,
+        0
+      ),
+    [listCards]
   );
 
   const boardUpdatedAt = board?.updatedAt
@@ -164,6 +217,7 @@ export function KanbanBoard({
       }));
     }
 
+    setOrderedLists(lists);
     setListCards(cardsMap);
   }, [lists]);
 
@@ -225,6 +279,24 @@ export function KanbanBoard({
     };
   };
 
+  const moveListInState = (
+    currentLists: ListItem[],
+    sourceIndex: number,
+    destinationIndex: number
+  ) => {
+    const nextLists = [...currentLists];
+    const [movedList] = nextLists.splice(sourceIndex, 1);
+
+    if (!movedList) return currentLists;
+
+    nextLists.splice(destinationIndex, 0, movedList);
+
+    return nextLists.map((list, index) => ({
+      ...list,
+      position: index,
+    }));
+  };
+
   const handleDragEnd = async (result: DropResult) => {
     const { source, destination, draggableId } = result;
 
@@ -233,6 +305,26 @@ export function KanbanBoard({
       source.droppableId === destination.droppableId &&
       source.index === destination.index
     ) {
+      return;
+    }
+
+    if (result.type === 'LIST') {
+      const previousLists = orderedLists;
+      setOrderedLists(
+        moveListInState(previousLists, source.index, destination.index)
+      );
+
+      moveListMutation.mutate(
+        {
+          listId: draggableId,
+          position: destination.index,
+        },
+        {
+          onError: () => {
+            setOrderedLists(previousLists);
+          },
+        }
+      );
       return;
     }
 
@@ -440,35 +532,48 @@ export function KanbanBoard({
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 gap-gap-lg md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {lists.map((list) => (
-              <KanbanList
-                key={list.id}
-                listId={list.id}
-                title={list.title}
-                cards={listCards[list.id] || []}
-                onAddCard={openAddCardModal}
-                onEditList={(listId, title) =>
-                  setSelectedList({
-                    id: listId,
-                    title,
-                    position: list.position,
-                    boardId: list.boardId,
-                  })
-                }
-                onDeleteList={(listId, title) =>
-                  setListToDelete({ id: listId, title })
-                }
-                onDeleteCard={setCardToDelete}
-                onOpenCard={(card) => setSelectedCard(card)}
-              />
-            ))}
-
-            <AddListButton
-              onAdd={() => setShowAddListModal(true)}
-              isLoading={createListMutation.isPending}
-            />
-          </div>
+          <Droppable
+            droppableId="board-lists"
+            direction="horizontal"
+            type="LIST"
+          >
+            {(provided) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className="flex gap-gap-lg overflow-x-auto pb-gap-md"
+              >
+                {orderedLists.map((list, index) => (
+                  <KanbanList
+                    key={list.id}
+                    listId={list.id}
+                    title={list.title}
+                    index={index}
+                    cards={listCards[list.id] || []}
+                    onAddCard={openAddCardModal}
+                    onEditList={(listId, title) =>
+                      setSelectedList({
+                        id: listId,
+                        title,
+                        position: list.position,
+                        boardId: list.boardId,
+                      })
+                    }
+                    onDeleteList={(listId, title) =>
+                      setListToDelete({ id: listId, title })
+                    }
+                    onDeleteCard={setCardToDelete}
+                    onOpenCard={(card) => setSelectedCard(card)}
+                  />
+                ))}
+                {provided.placeholder}
+                <AddListButton
+                  onAdd={() => setShowAddListModal(true)}
+                  isLoading={createListMutation.isPending}
+                />
+              </div>
+            )}
+          </Droppable>
         )}
       </DragDropContext>
 

@@ -164,11 +164,20 @@ export class ListService {
                 updateData.title = nextTitle
             }
 
-            if (validatedData.position !== undefined) {
-                updateData.position = validatedData.position
+            let updated = list
+
+            if (Object.keys(updateData).length > 0) {
+                updated = await this.repository.updateList(listId, updateData)
             }
 
-            const updated = await this.repository.updateList(listId, updateData)
+            if (validatedData.position !== undefined) {
+                updated = await this.repository.moveList(
+                    listId,
+                    list.boardId,
+                    validatedData.position
+                )
+            }
+
             return updated
         } catch (error) {
             if (error instanceof AuthError) throw error
