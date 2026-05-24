@@ -6,28 +6,41 @@ import prisma from '@/lib/db/prisma'
 export class ListService {
     private readonly repository = new ListRepository()
 
+    private async assertBoardAccess(boardId: bigint, userId: bigint) {
+        const board = await prisma.board.findUnique({
+            where: { id: boardId },
+            select: { id: true, ownerId: true, workspaceId: true },
+        })
+
+        if (!board) {
+            throw new AuthError(
+                'Board not found',
+                404,
+                AuthErrorCode.USER_NOT_FOUND
+            )
+        }
+
+        const member = board.workspaceId
+            ? await prisma.workspaceMember.findFirst({
+                where: { workspaceId: board.workspaceId, userId },
+                select: { id: true },
+            })
+            : null
+
+        if (board.ownerId !== userId && !member) {
+            throw new AuthError(
+                'Forbidden - you do not have access to this board',
+                403,
+                AuthErrorCode.FORBIDDEN
+            )
+        }
+
+        return board
+    }
+
     async getListsByBoardId(boardId: bigint, userId: bigint) {
         try {
-            const board = await prisma.board.findUnique({
-                where: { id: boardId },
-                select: { id: true, ownerId: true },
-            })
-
-            if (!board) {
-                throw new AuthError(
-                    'Board not found',
-                    404,
-                    AuthErrorCode.USER_NOT_FOUND
-                )
-            }
-
-            if (board.ownerId !== userId) {
-                throw new AuthError(
-                    'Forbidden - you do not own this board',
-                    403,
-                    AuthErrorCode.FORBIDDEN
-                )
-            }
+            await this.assertBoardAccess(boardId, userId)
 
             const lists = await this.repository.getListsByBoardId(boardId)
             return lists
@@ -49,18 +62,7 @@ export class ListService {
                 throw new AuthError('List not found', 404, AuthErrorCode.USER_NOT_FOUND)
             }
 
-            const board = await prisma.board.findUnique({
-                where: { id: list.boardId },
-                select: { id: true, ownerId: true },
-            })
-
-            if (board?.ownerId !== userId) {
-                throw new AuthError(
-                    'Forbidden - you do not own this board',
-                    403,
-                    AuthErrorCode.FORBIDDEN
-                )
-            }
+            await this.assertBoardAccess(list.boardId, userId)
 
             return list
         } catch (error) {
@@ -75,26 +77,7 @@ export class ListService {
 
     async createList(boardId: bigint, userId: bigint, credentials: unknown) {
         try {
-            const board = await prisma.board.findUnique({
-                where: { id: boardId },
-                select: { id: true, ownerId: true },
-            })
-
-            if (!board) {
-                throw new AuthError(
-                    'Board not found',
-                    404,
-                    AuthErrorCode.USER_NOT_FOUND
-                )
-            }
-
-            if (board.ownerId !== userId) {
-                throw new AuthError(
-                    'Forbidden - you do not own this board',
-                    403,
-                    AuthErrorCode.FORBIDDEN
-                )
-            }
+            await this.assertBoardAccess(boardId, userId)
 
             const validatedData = createListSchema.parse(credentials)
             const title = validatedData.title.trim()
@@ -149,18 +132,7 @@ export class ListService {
                 throw new AuthError('List not found', 404, AuthErrorCode.USER_NOT_FOUND)
             }
 
-            const board = await prisma.board.findUnique({
-                where: { id: list.boardId },
-                select: { id: true, ownerId: true },
-            })
-
-            if (board?.ownerId !== userId) {
-                throw new AuthError(
-                    'Forbidden - you do not own this board',
-                    403,
-                    AuthErrorCode.FORBIDDEN
-                )
-            }
+            await this.assertBoardAccess(list.boardId, userId)
 
             const validatedData = updateListSchema.parse(credentials)
 
@@ -216,18 +188,7 @@ export class ListService {
                 throw new AuthError('List not found', 404, AuthErrorCode.USER_NOT_FOUND)
             }
 
-            const board = await prisma.board.findUnique({
-                where: { id: list.boardId },
-                select: { id: true, ownerId: true },
-            })
-
-            if (board?.ownerId !== userId) {
-                throw new AuthError(
-                    'Forbidden - you do not own this board',
-                    403,
-                    AuthErrorCode.FORBIDDEN
-                )
-            }
+            await this.assertBoardAccess(list.boardId, userId)
 
             await this.repository.deleteList(listId)
         } catch (error) {
