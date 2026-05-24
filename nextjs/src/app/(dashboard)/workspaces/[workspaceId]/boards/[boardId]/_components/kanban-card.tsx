@@ -39,16 +39,23 @@ export function KanbanCard({
             snapshot.isDragging && 'shadow-lg ring-1 ring-hairline-ghost'
           )}
         >
-          <button
-            type="button"
+          <div
+            role="button"
+            tabIndex={0}
             {...provided.dragHandleProps}
             onClick={() => onOpen(card)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                onOpen(card);
+              }
+            }}
             className="flex w-full cursor-grab items-start justify-between gap-gap-sm text-left active:cursor-grabbing"
           >
             <p className="min-w-0 break-words text-body text-ink">
               {card.title}
             </p>
-          </button>
+          </div>
           <div className="absolute right-gap-sm top-gap-sm">
             <button
               type="button"
