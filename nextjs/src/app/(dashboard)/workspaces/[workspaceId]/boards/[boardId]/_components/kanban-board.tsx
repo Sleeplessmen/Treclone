@@ -145,6 +145,18 @@ function useMoveListMutation(workspaceId: string, boardId: string) {
   });
 }
 
+function parseCardDraggableId(draggableId: string) {
+  return draggableId.startsWith('card-')
+    ? draggableId.slice('card-'.length)
+    : draggableId;
+}
+
+function parseListDraggableId(draggableId: string) {
+  return draggableId.startsWith('list-')
+    ? draggableId.slice('list-'.length)
+    : draggableId;
+}
+
 export function KanbanBoard({
   boardId,
   workspaceId,
@@ -241,6 +253,7 @@ export function KanbanBoard({
     const { source, destination, draggableId } = result;
     if (!destination) return currentCards;
 
+    const cardId = parseCardDraggableId(draggableId);
     const sourceCards = [...(currentCards[source.droppableId] || [])];
     const destinationCards =
       source.droppableId === destination.droppableId
@@ -252,7 +265,7 @@ export function KanbanBoard({
 
     destinationCards.splice(destination.index, 0, {
       ...movedCard,
-      id: draggableId,
+      id: cardId,
       listId: destination.droppableId,
     });
 
@@ -309,6 +322,7 @@ export function KanbanBoard({
     }
 
     if (result.type === 'LIST') {
+      const listId = parseListDraggableId(draggableId);
       const previousLists = orderedLists;
       setOrderedLists(
         moveListInState(previousLists, source.index, destination.index)
@@ -316,7 +330,7 @@ export function KanbanBoard({
 
       moveListMutation.mutate(
         {
-          listId: draggableId,
+          listId,
           position: destination.index,
         },
         {
@@ -334,7 +348,7 @@ export function KanbanBoard({
     moveCardMutation.mutate(
       {
         sourceListId: source.droppableId,
-        cardId: draggableId,
+        cardId: parseCardDraggableId(draggableId),
         destinationListId: destination.droppableId,
         position: destination.index,
       },

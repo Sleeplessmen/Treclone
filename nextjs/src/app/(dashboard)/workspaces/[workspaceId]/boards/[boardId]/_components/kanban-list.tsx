@@ -46,7 +46,7 @@ export function KanbanList({
   onOpenCard,
 }: Readonly<KanbanListProps>) {
   return (
-    <Draggable draggableId={listId} index={index}>
+    <Draggable draggableId={`list-${listId}`} index={index}>
       {(dragProvided, dragSnapshot) => (
         <div
           ref={dragProvided.innerRef}
