@@ -1,289 +1,139 @@
-# Fullstack Next.js Example with Prisma Postgres
+# Treclone — Fullstack Next.js App with Prisma
 
-This example shows how to implement a fullstack app using [Next.js 15](https://nextjs.org/) with App Router, Prisma ORM and a [Prisma Postgres](https://www.prisma.io/postgres) database.
+A professional starter app built with Next.js (App Router), Prisma ORM and PostgreSQL.
 
-## Getting started
+This repository demonstrates a production-oriented structure including Prisma schema and migrations, Next.js App Router pages, API routes, server and client components, Tailwind CSS, and testing configuration.
 
-### 1. Download example and navigate into the project directory
+## Features
 
-Download this example:
+- Next.js App Router with TypeScript
+- Prisma ORM with migrations and seed script
+- PostgreSQL-ready configuration (compatible with Prisma Postgres)
+- Tailwind CSS for styling
+- Authentication and workspace features scaffolded
+- Vitest configuration for unit and integration tests
 
-```
-npx try-prisma@latest --template orm/nextjs --install npm --name nextjs
-```
+## Tech stack
 
-Then, navigate into the project directory:
+- Next.js 15 + App Router
+- TypeScript
+- Prisma ORM
+- PostgreSQL (or Prisma Postgres)
+- Tailwind CSS
+- Vitest for testing
 
-```
-cd nextjs
-```
+## Requirements
 
-<details><summary><strong>Alternative:</strong> Clone the entire repo</summary>
+- Node.js 18+ (LTS recommended)
+- npm (or pnpm/yarn)
+- A PostgreSQL database (or use Prisma Postgres)
 
-Clone this repository:
+## Quickstart
 
-```
-git clone git@github.com:prisma/prisma-examples.git --depth=1
-```
+1. Install dependencies
 
-Install npm dependencies:
-
-```
-cd prisma-examples/orm/nextjs
+```bash
 npm install
 ```
 
-</details>
-
-### 2. Create and seed the database
-
-Create a new [Prisma Postgres](https://www.prisma.io/docs/postgres/overview) database by executing:
-
-```terminal
-npx prisma init --db
-```
-
-If you don't have a [Prisma Data Platform](https://console.prisma.io/) account yet, or if you are not logged in, the command will prompt you to log in using one of the available authentication providers. A browser window will open so you can log in or create an account. Return to the CLI after you have completed this step.
-
-Once logged in (or if you were already logged in), the CLI will prompt you to:
-1. Select a **region** (e.g. `us-east-1`)
-1. Enter a **project name**
-
-After successful creation, you will see output similar to the following:
-
-<details>
-
-<summary>CLI output</summary>
-
-```terminal
-Let's set up your Prisma Postgres database!
-? Select your region: ap-northeast-1 - Asia Pacific (Tokyo)
-? Enter a project name: testing-migration
-✔ Success! Your Prisma Postgres database is ready ✅
-
-We found an existing schema.prisma file in your current project directory.
-
---- Database URL ---
-
-Connect Prisma ORM to your Prisma Postgres database with the provided URL and add it to your `.env` as `DATABASE_URL`.
-
---- Next steps ---
-
-Go to https://pris.ly/ppg-init for detailed instructions.
-
-1. Install the `@prisma/adapter-pg` driver adapter and configure your Prisma Client instance
-```bash
-npm install @prisma/adapter-pg
-```
-```ts
-import { PrismaPg } from '@prisma/adapter-pg'
-const pool = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
-const prisma = new PrismaClient({ adapter: pool })
-```
-
-2. Apply migrations
-Run the following command to create and apply a migration:
-npx prisma migrate dev
-
-3. Manage your data
-View and edit your data locally by running this command:
-npx prisma studio
-
-...or online in Console:
-https://console.prisma.io/{workspaceId}/{projectId}/studio
-
-4. Send queries from your app
-If you already have an existing app with Prisma ORM, you can now run it and it will send queries against your newly created Prisma Postgres instance.
-
-5. Learn more
-For more info, visit the Prisma Postgres docs: https://pris.ly/ppg-docs
-```
-
-</details>
-
-Locate and copy the database URL provided in the CLI output. Then, create a `.env` file in the project root:
-
-```bash
-touch .env
-```
-
-Now, paste the URL into it as a value for the `DATABASE_URL` environment variable. For example:
+2. Create a `.env` file in the project root and add your `DATABASE_URL`:
 
 ```bash
 # .env
 DATABASE_URL=postgres://<username>:<password>@<host>:<port>/<database>
 ```
 
-Run the following command to create tables in your database. This creates the `User` and `Post` tables that are defined in [`prisma/schema.prisma`](./prisma/schema.prisma):
+3. Initialize and apply migrations
 
-```terminal
+```bash
 npx prisma migrate dev --name init
 ```
 
-Execute the seed file in [`prisma/seed.ts`](./prisma/seed.ts) to populate your database with some sample data, by running:
+4. Seed the database
 
-```terminal
+```bash
 npx prisma db seed
 ```
 
-### 3. Start the Next.js server
+5. Run the development server
 
-```
+```bash
 npm run dev
 ```
 
-The server is now running on `http://localhost:3000`. You can now view all different pages:
+The app will be available at http://localhost:3000.
 
-- Home: [`http://localhost:3000/`](http://localhost:3000/)
-- All posts: [`http://localhost:3000/posts`](http://localhost:3000/posts)
-- New post: [`http://localhost:3000/posts/new`](http://localhost:3000/posts/new)
-- Post details: [`http://localhost:3000/posts/1`](http://localhost:3000/posts/1)
+## Important files
 
-## Evolving the app
+- Prisma schema: [prisma/schema.prisma](prisma/schema.prisma)
+- Seed script: [prisma/seed.ts](prisma/seed.ts)
+- Next.js App entry: [app/layout.tsx](app/layout.tsx)
+- Tailwind config: [tailwind.config.ts](tailwind.config.ts)
 
-Evolving the application typically requires two steps:
+## Database & Prisma notes
 
-1. Migrate your database using Prisma Migrate
-1. Update your application code
+- To switch databases, update `provider` in `prisma/schema.prisma` and set the appropriate `DATABASE_URL`.
+- When collaborating, commit migrations from `prisma/migrations` so teammates and CI can apply the same schema.
 
-For the following example scenario, assume you want to add a "profile" feature to the app where users can create a profile and write a short bio about themselves.
+Common Prisma commands:
 
-### 1. Migrate your database using Prisma Migrate
+```bash
+# Generate Prisma client after editing schema
+npx prisma generate
 
-The first step is to add a new table, e.g. called `Profile`, to the database. You can do this by adding a new model to your [Prisma schema file](./prisma/schema.prisma) file and then running a migration afterwards:
+# Apply migrations (development)
+npx prisma migrate dev
 
-```diff
-// ./prisma/schema.prisma
+# Create a migration without applying (deploy workflows may use migrate deploy)
+npx prisma migrate diff
 
-model User {
-  id      Int      @default(autoincrement()) @id
-  name    String?
-  email   String   @unique
-  posts   Post[]
-+ profile Profile?
-}
-
-model Post {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  viewCount Int      @default(0)
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  Int?
-}
-
-+model Profile {
-+  id     Int     @default(autoincrement()) @id
-+  bio    String?
-+  user   User    @relation(fields: [userId], references: [id])
-+  userId Int     @unique
-+}
+# Open Prisma Studio
+npx prisma studio
 ```
 
-Once you've updated your data model, you can execute the changes against your database with the following command:
+## Testing
 
-```
-npx prisma migrate dev --name add-profile
-```
+Run unit and integration tests with Vitest:
 
-This adds another migration to the `prisma/migrations` directory and creates the new `Profile` table in the database.
-
-### 2. Update your application code
-
-You can now use your `PrismaClient` instance to perform operations against the new `Profile` table. Those operations can be used to implement new pages in the app.
-
-## Switch to another database (e.g. SQLite, MySQL, SQL Server, MongoDB)
-
-If you want to try this example with another database than Postgres, you can adjust the the database connection in [`prisma/schema.prisma`](./prisma/schema.prisma) by reconfiguring the `datasource` block.
-
-Learn more about the different connection configurations in the [docs](https://www.prisma.io/docs/reference/database-reference/connection-urls).
-
-<details><summary>Expand for an overview of example configurations with different databases</summary>
-
-### Your own PostgreSQL database
-
-To use your own PostgreSQL database, set `DATABASE_URL` to your connection string (e.g. `postgres://<username>:<password>@<host>:<port>/<database>`). Ensure your app initializes `PrismaClient` with the `@prisma/adapter-pg` driver adapter as shown above.
-
-### SQLite
-
-Modify the `provider` value in the `datasource` block in the [`prisma.schema`](./prisma/schema.prisma) file:
-
-```prisma
-datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
-}
+```bash
+npm run test
 ```
 
-Create an `.env` file and add the SQLite database connection string in it. For example:
+Adjust test scripts in `package.json` if your workflow differs.
 
-```terminal
-DATABASE_URL="file:./dev.db""
+## Building & deployment
+
+Build for production:
+
+```bash
+npm run build
+npm start
 ```
 
-### MySQL
+This project is ready for deployment to Vercel, Render, or any Node.js host. For Vercel, ensure `DATABASE_URL` is configured in the project environment variables.
 
-Modify the `provider` value in the `datasource` block in the [`prisma.schema`](./prisma/schema.prisma) file:
+## Contributing
 
-```prisma
-datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
-}
-```
+Contributions are welcome. Suggested workflow:
 
-Create an `.env` file and add a MySQL database connection string in it. For example:
+1. Fork the repo
+2. Create a feature branch
+3. Add tests for new behavior
+4. Run migrations and seed locally
+5. Open a pull request with a clear description
 
-```terminal
-## This is a placeholder url
-DATABASE_URL="mysql://janedoe:mypassword@localhost:3306/notesapi"
-```
+## Troubleshooting
 
-### Microsoft SQL Server
+- If Prisma complains about missing client, run `npx prisma generate`.
+- If migrations fail, check `prisma/migrations` and the database connection in `.env`.
+- For platform-specific issues (Windows), ensure environment variables are loaded correctly and line endings are normalized.
 
-Modify the `provider` value in the `datasource` block in the [`prisma.schema`](./prisma/schema.prisma) file:
+## License & contact
 
-```prisma
-datasource db {
-  provider = "sqlserver"
-  url      = env("DATABASE_URL")
-}
-```
+This project is provided as an example. Add a `LICENSE` file to clarify terms for your use.
 
-Create an `.env` file and add a Microsoft SQL Server database connection string in it. For example:
+If you have questions, open an issue or contact the maintainers.
 
-```terminal
-## This is a placeholder url
-DATABASE_URL="sqlserver://localhost:1433;initial catalog=sample;user=sa;password=mypassword;"
-```
+---
 
-### MongoDB
-
-Modify the `provider` value in the `datasource` block in the [`prisma.schema`](./prisma/schema.prisma) file:
-
-```prisma
-datasource db {
-  provider = "mongodb"
-  url      = env("DATABASE_URL")
-}
-```
-
-Create an `.env` file and add a local MongoDB database connection string in it. For example:
-
-```terminal
-## This is a placeholder url
-DATABASE_URL="mongodb://USERNAME:PASSWORD@HOST/DATABASE?authSource=admin&retryWrites=true&w=majority"
-```
-
-</details>
-
-## Next steps
-
-- Check out the [Prisma docs](https://www.prisma.io/docs)
-- [Join our community on Discord](https://pris.ly/discord?utm_source=github&utm_medium=prisma_examples&utm_content=next_steps_section) to share feedback and interact with other users.
-- [Subscribe to our YouTube channel](https://pris.ly/youtube?utm_source=github&utm_medium=prisma_examples&utm_content=next_steps_section) for live demos and video tutorials.
-- [Follow us on X](https://pris.ly/x?utm_source=github&utm_medium=prisma_examples&utm_content=next_steps_section) for the latest updates.
-- Report issues or ask [questions on GitHub](https://pris.ly/github?utm_source=github&utm_medium=prisma_examples&utm_content=next_steps_section).
+Updated README: provides a clear onboarding, setup, and maintenance guide for developers and contributors.
