@@ -4,12 +4,10 @@ import BoardPage from '@/app/(dashboard)/workspaces/[workspaceId]/boards/[boardI
 import { QueryClientProvider } from '@tanstack/react-query';
 import * as navigationModule from 'next/navigation';
 
-// Mock next/navigation
 vi.mock('next/navigation', () => ({
   useParams: vi.fn(),
 }));
 
-// Mock KanbanBoard component - Use ABSOLUTE path
 vi.mock(
   '@/app/(dashboard)/workspaces/[workspaceId]/boards/[boardId]/_components/kanban-board',
   () => ({
