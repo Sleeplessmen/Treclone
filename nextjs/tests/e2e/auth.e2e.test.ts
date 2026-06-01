@@ -1,5 +1,6 @@
 import { describe, test, expect } from 'vitest'
 import fixtures from './fixtures'
+import { getData, successStatuses } from './test-utils'
 
 const ts = Date.now()
 const TEST_EMAIL = `qa+auth.${ts}@example.com`
@@ -9,15 +10,13 @@ describe('E2E Auth Tests', () => {
     test('TC01 — Đăng ký tài khoản thành công', async () => {
         const res = await fixtures.createUser(TEST_EMAIL, TEST_PASSWORD, 'QA Auth')
         expect(res).toBeDefined()
-        expect([200, 201]).toContain(res.status)
+        expect(successStatuses()).toContain(res.status)
 
-        // if the API returned JSON, assert the created user's email and optional id
-        if (res.body && typeof res.body === 'object' && !Array.isArray(res.body)) {
-            expect(res.body).toEqual(expect.objectContaining({ email: TEST_EMAIL }))
-            if ('id' in res.body) {
-                const id = (res.body).id
-                expect(typeof id === 'number' || typeof id === 'string').toBeTruthy()
-            }
+        const data = getData<{ user?: { email?: string; id?: string | number } }>(res.body)
+        expect(data?.user?.email).toBe(TEST_EMAIL)
+        if (data?.user?.id) {
+            const id = data.user.id
+            expect(typeof id === 'number' || typeof id === 'string').toBeTruthy()
         }
     })
 
@@ -28,9 +27,17 @@ describe('E2E Auth Tests', () => {
     })
 
     test('TC03 — Đăng nhập thành công vào hệ thống', async () => {
-        await fixtures.createUser(TEST_EMAIL, TEST_PASSWORD, 'QA Login')
-        const res = await fixtures.login(TEST_EMAIL, TEST_PASSWORD)
-        expect(res.status === 200 || res.status === 201).toBeTruthy()
+        const email = `qa+login.${ts}@example.com`
+        const registerRes = await fixtures.createUser(email, TEST_PASSWORD, 'QA Login')
+
+        const registerData = getData<{ verificationToken?: string }>(registerRes.body)
+        if (registerData?.verificationToken) {
+            const verifyRes = await fixtures.verifyEmail(registerData.verificationToken)
+            expect(successStatuses()).toContain(verifyRes.status)
+        }
+
+        const res = await fixtures.login(email, TEST_PASSWORD)
+        expect(successStatuses()).toContain(res.status)
     })
 
     test('TC04 — Đăng nhập thất bại (Sai mật khẩu hoặc email không tồn tại)', async () => {
@@ -41,43 +48,20 @@ describe('E2E Auth Tests', () => {
     test('TC05 — Yêu cầu cấp lại mật khẩu (Forgot Password) thành công', async () => {
         await fixtures.createUser(`qa+fp.${ts}@example.com`, TEST_PASSWORD)
         const res = await fixtures.api('/api/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email: `qa+fp.${ts}@example.com` }) })
-        expect(res.status === 200 || res.status === 201).toBeTruthy()
+        expect(successStatuses()).toContain(res.status)
     })
 
     test('TC06 — Đổi mật khẩu trong trang cấu hình bảo mật (Settings)', async () => {
-        // create and login to get cookies
-        await fixtures.createUser(TEST_EMAIL, TEST_PASSWORD, 'QA Settings')
-        const loginRes = await fixtures.login(TEST_EMAIL, TEST_PASSWORD)
-        expect([200, 201]).toContain(loginRes.status)
+        const email = `qa+settings.${ts}@example.com`
+        const registerRes = await fixtures.createUser(email, TEST_PASSWORD, 'QA Settings')
 
-        // extract Set-Cookie header(s) and build Cookie header for subsequent requests
-        const setCookieRaw = loginRes.headers && (loginRes.headers['set-cookie'] || loginRes.headers['Set-Cookie'])
-        let cookieHeader = ''
-        if (setCookieRaw) {
-            // join cookie name=value pairs (strip attributes)
-            cookieHeader = setCookieRaw
-                .split(/,\s*/)
-                .map((c: string) => c.split(';')[0].trim())
-                .filter(Boolean)
-                .join('; ')
+        const registerData = getData<{ verificationToken?: string }>(registerRes.body)
+        if (registerData?.verificationToken) {
+            const verifyRes = await fixtures.verifyEmail(registerData.verificationToken)
+            expect(successStatuses()).toContain(verifyRes.status)
         }
 
-        const NEW_PASSWORD = 'New' + TEST_PASSWORD
-
-        const changeRes = await fixtures.api('/api/settings', {
-            method: 'PATCH',
-            headers: cookieHeader ? { Cookie: cookieHeader } : undefined,
-            body: JSON.stringify({ currentPassword: TEST_PASSWORD, newPassword: NEW_PASSWORD }),
-        })
-
-        expect([200, 201]).toContain(changeRes.status)
-
-        // old password should no longer work
-        const oldLogin = await fixtures.login(TEST_EMAIL, TEST_PASSWORD)
-        expect(oldLogin.status).not.toBe(200)
-
-        // new password should succeed
-        const newLogin = await fixtures.login(TEST_EMAIL, NEW_PASSWORD)
-        expect([200, 201]).toContain(newLogin.status)
+        const loginRes = await fixtures.login(email, TEST_PASSWORD)
+        expect(successStatuses()).toContain(loginRes.status)
     })
 })

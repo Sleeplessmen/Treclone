@@ -21,9 +21,34 @@ export function getCookieToken(request: NextRequest): string | null {
     }
 }
 
+export function getBearerToken(request: NextRequest): string | null {
+    try {
+        const authorization = request.headers.get('authorization') || request.headers.get('Authorization')
+
+        if (!authorization) {
+            return null
+        }
+
+        const [scheme, token] = authorization.split(' ')
+
+        if (scheme?.toLowerCase() !== 'bearer' || !token) {
+            return null
+        }
+
+        return token.trim() || null
+    } catch (error) {
+        console.error('Error reading bearer token:', error)
+        return null
+    }
+}
+
+export function getRequestToken(request: NextRequest): string | null {
+    return getCookieToken(request) || getBearerToken(request)
+}
+
 export function extractUserIdFromCookie(request: NextRequest): bigint | null {
     try {
-        const token = getCookieToken(request)
+        const token = getRequestToken(request)
 
         if (!token) {
             return null
@@ -47,7 +72,7 @@ export function verifyTokenFromCookie(request: NextRequest): {
     error: string | null
 } {
     try {
-        const token = getCookieToken(request)
+        const token = getRequestToken(request)
 
         if (!token) {
             return { valid: false, userId: null, error: 'No token provided' }

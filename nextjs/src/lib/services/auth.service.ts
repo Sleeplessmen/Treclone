@@ -54,6 +54,7 @@ export class AuthService {
             return { user, verificationToken: token }
         } catch (error) {
             if (error instanceof AuthError) throw error
+            console.error('[AuthService.register] Unexpected error:', error)
             throw new AuthError(
                 'Registration failed',
                 400,

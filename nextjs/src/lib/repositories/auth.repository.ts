@@ -22,6 +22,13 @@ export class AuthRepository {
                 emailVerificationToken,
                 emailVerificationExpires,
             },
+            select: {
+                id: true,
+                email: true,
+                fullName: true,
+                emailVerifiedAt: true,
+                passwordHash: true,
+            },
         })
     }
 
