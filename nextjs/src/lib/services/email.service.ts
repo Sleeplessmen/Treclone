@@ -10,6 +10,12 @@ interface SendEmailVerificationEmailInput {
     appUrl?: string
 }
 
+type EmailPayload = {
+    to: string
+    subject: string
+    html: string
+}
+
 function getAppUrl(appUrl?: string) {
     return (
         appUrl ||
@@ -19,15 +25,40 @@ function getAppUrl(appUrl?: string) {
     ).replace(/\/$/, '')
 }
 
-async function sendEmail({
-    to,
-    subject,
-    html,
-}: {
-    to: string
-    subject: string
-    html: string
-}) {
+function parseBoolean(value?: string) {
+    if (!value) return false
+    return ['1', 'true', 'yes', 'on'].includes(value.toLowerCase())
+}
+
+async function sendWithMailpit({ to, subject, html }: EmailPayload) {
+    const host = process.env.SMTP_HOST
+    const port = Number(process.env.SMTP_PORT || '1025')
+    const user = process.env.SMTP_USER
+    const pass = process.env.SMTP_PASS
+    const from = process.env.EMAIL_FROM
+    const secure = parseBoolean(process.env.SMTP_SECURE)
+
+    if (!host || !from) {
+        throw new Error('SMTP_HOST and EMAIL_FROM are required for SMTP email.')
+    }
+
+    const nodemailerModule = await import('nodemailer')
+    const transporter = nodemailerModule.createTransport({
+        host,
+        port,
+        secure,
+        auth: user && pass ? { user, pass } : undefined,
+    })
+
+    await transporter.sendMail({
+        from,
+        to,
+        subject,
+        html,
+    })
+}
+
+async function sendWithResend({ to, subject, html }: EmailPayload) {
     const apiKey = process.env.RESEND_API_KEY
     const from = process.env.EMAIL_FROM
 
@@ -56,6 +87,15 @@ async function sendEmail({
         const message = await response.text()
         throw new Error(`Failed to send email: ${message}`)
     }
+}
+
+async function sendEmail(payload: EmailPayload) {
+    if (process.env.SMTP_HOST) {
+        await sendWithMailpit(payload)
+        return
+    }
+
+    await sendWithResend(payload)
 }
 
 export async function sendPasswordResetEmail({
