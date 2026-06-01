@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest'
-import fixtures from './fixtures'
-import { authAs, getData, successStatuses, DEFAULT_TEST_PASSWORD } from './test-utils'
+import fixtures from '../fixtures'
+import { authAs, getData, successStatuses, DEFAULT_TEST_PASSWORD } from '../test-utils'
 
 const ts = Date.now()
 const TEST_PASSWORD = DEFAULT_TEST_PASSWORD

@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest'
-import fixtures from './fixtures'
-import { getData, successStatuses } from './test-utils'
+import fixtures from '../fixtures'
+import { getData, successStatuses } from '../test-utils'
 
 const ts = Date.now()
 const TEST_EMAIL = `qa+auth.${ts}@example.com`
