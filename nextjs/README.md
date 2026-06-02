@@ -106,7 +106,6 @@ If you are updating this README over time, treat the `App features` section as t
 - PostgreSQL
 - Tailwind CSS
 - React Query
-- NextAuth
 - Vitest
 - Playwright
 
