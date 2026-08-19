@@ -1,0 +1,178 @@
+import * as bcrypt from 'bcryptjs';
+import { z } from 'zod';
+import { SettingsRepository } from '@/lib/repositories/settings.repository';
+import {
+  changePasswordSchema,
+  deleteAccountSchema,
+  updateUserPreferencesSchema,
+} from '@/lib/validation/settings';
+import { AppError, ErrorCode } from '@/lib/utils/errors';
+
+export class SettingsService {
+  private readonly repository = new SettingsRepository();
+
+  async getUserPreferences(userId: bigint) {
+    try {
+      const user = await this.repository.getUserPreferences(userId);
+
+      if (!user) {
+        throw new AppError(
+          'User not found',
+          404,
+          ErrorCode.USER_NOT_FOUND
+        );
+      }
+
+      return user;
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      throw new AppError(
+        'Failed to retrieve user preferences',
+        500,
+        ErrorCode.INTERNAL_ERROR
+      );
+    }
+  }
+
+  async updateUserPreferences(userId: bigint, credentials: unknown) {
+    try {
+      const validatedData = updateUserPreferencesSchema.parse(credentials);
+
+      const updateData: {
+        emailNotifications?: boolean;
+        darkMode?: boolean;
+      } = {};
+
+      if (validatedData.emailNotifications !== undefined) {
+        updateData.emailNotifications = validatedData.emailNotifications;
+      }
+
+      if (validatedData.darkMode !== undefined) {
+        updateData.darkMode = validatedData.darkMode;
+      }
+
+      const updated = await this.repository.updateUserPreferences(
+        userId,
+        updateData
+      );
+
+      if (!updated) {
+        throw new AppError(
+          'User not found',
+          404,
+          ErrorCode.USER_NOT_FOUND
+        );
+      }
+
+      return updated;
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      throw new AppError(
+        'Failed to update preferences',
+        500,
+        ErrorCode.INTERNAL_ERROR
+      );
+    }
+  }
+
+  async changePassword(userId: bigint, credentials: unknown) {
+    try {
+      const validatedData = changePasswordSchema.parse(credentials);
+
+      // Get user's current password hash
+      const user = await this.repository.getUserPasswordHash(userId);
+
+      if (!user) {
+        throw new AppError(
+          'User not found',
+          404,
+          ErrorCode.USER_NOT_FOUND
+        );
+      }
+
+      if (!user.emailVerifiedAt) {
+        throw new AppError(
+          'Please verify your email before changing your password',
+          403,
+          ErrorCode.EMAIL_NOT_VERIFIED
+        );
+      }
+
+      // Verify current password
+      const isPasswordValid = await bcrypt.compare(
+        validatedData.currentPassword,
+        user.passwordHash
+      );
+
+      if (!isPasswordValid) {
+        throw new AppError(
+          'Current password is incorrect',
+          401,
+          ErrorCode.INVALID_CREDENTIALS
+        );
+      }
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(validatedData.newPassword, 10);
+
+      // Update password
+      const updated = await this.repository.updatePassword(
+        userId,
+        hashedPassword
+      );
+
+      return updated;
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      throw new AppError(
+        'Failed to change password',
+        500,
+        ErrorCode.INTERNAL_ERROR
+      );
+    }
+  }
+
+  async deleteAccount(userId: bigint, credentials: unknown) {
+    try {
+      const validatedData = deleteAccountSchema.parse(credentials);
+
+      // Get user's password hash
+      const user = await this.repository.getUserPasswordHash(userId);
+
+      if (!user) {
+        throw new AppError(
+          'User not found',
+          404,
+          ErrorCode.USER_NOT_FOUND
+        );
+      }
+
+      // Verify password for account deletion
+      const isPasswordValid = await bcrypt.compare(
+        validatedData.password,
+        user.passwordHash
+      );
+
+      if (!isPasswordValid) {
+        throw new AppError(
+          'Password is incorrect',
+          401,
+          ErrorCode.INVALID_CREDENTIALS
+        );
+      }
+
+      // Delete user
+      const deleted = await this.repository.deleteUser(userId);
+
+      return deleted;
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      if (error instanceof z.ZodError) throw error;
+      throw new AppError(
+        'Failed to delete account',
+        500,
+        ErrorCode.INTERNAL_ERROR
+      );
+    }
+  }
+}

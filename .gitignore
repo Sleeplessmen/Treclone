@@ -1,29 +1,60 @@
-# Dependencies
-node_modules/
+# ---- Dependencies ----
+/node_modules
+/.pnp
+.pnp.*
 
-# Environment variables
+# ---- Next.js ----
+/.next/
+/out/
+/next-env.d.ts
+*.tsbuildinfo
+
+# ---- Build & Coverage ----
+/build
+/.turbo/
+/coverage/
+/.vitest/
+/.nyc_output/
+*.lcov
+vitest.results.json
+
+# ---- Environment ----
 .env
 .env.*
 !.env.example
 
-# Next.js build output
-.next/
-out/
-next-env.d.ts
+# ---- Vercel ----
+/.vercel
 
-# TypeScript build cache
-*.tsbuildinfo
+# ---- Prisma generated client ----
+/prisma/generated/
+/src/app/generated/
 
-# Generated Prisma Client
-prisma/generated/
-
-# Debug logs
+# ---- Debug logs ----
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# OS and editor files
+# ---- OS & Editor ----
 .DS_Store
 .idea/
-.vscode/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.pem
+
+# ---- Storybook ----
+.storybook/
+storybook-static
+src/stories/
+*storybook.log
+
+# ---- Project housekeeping ----
+design/
+bruno/
+COMMAND.md
+MEGA_PROMPT.md
+UI_INSTRUCTION.md
+
+

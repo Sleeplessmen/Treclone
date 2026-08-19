@@ -1,0 +1,116 @@
+import { NextRequest, NextResponse } from 'next/server'
+import {
+    successResponse,
+    errorResponse,
+    convertBigIntToString,
+} from '@/lib/utils/api-utils'
+import { WorkspaceMemberService } from '@/lib/services/workspace-member.service'
+import { handleError } from '@/lib/utils/errors'
+
+export class WorkspaceMemberController {
+    private readonly service = new WorkspaceMemberService()
+
+    async getMembers(
+        request: NextRequest,
+        workspaceId: bigint,
+        userId: bigint
+    ) {
+        try {
+            const members = await this.service.getMembers(workspaceId, userId)
+
+            return NextResponse.json(
+                successResponse({
+                    message: 'Workspace members fetched successfully',
+                    members: convertBigIntToString(members),
+                })
+            )
+        } catch (error) {
+            const authError = handleError(error)
+            return NextResponse.json(
+                errorResponse(authError.message, authError.statusCode),
+                { status: authError.statusCode }
+            )
+        }
+    }
+
+    async addMember(
+        request: NextRequest,
+        workspaceId: bigint,
+        userId: bigint
+    ) {
+        try {
+            const body = await request.json()
+            const member = await this.service.addMember(workspaceId, userId, body)
+
+            return NextResponse.json(
+                successResponse(
+                    {
+                        message: 'Member added successfully',
+                        member: convertBigIntToString(member),
+                    },
+                    201
+                ),
+                { status: 201 }
+            )
+        } catch (error) {
+            const authError = handleError(error)
+            return NextResponse.json(
+                errorResponse(authError.message, authError.statusCode),
+                { status: authError.statusCode }
+            )
+        }
+    }
+
+    async updateMember(
+        request: NextRequest,
+        workspaceId: bigint,
+        memberId: bigint,
+        userId: bigint
+    ) {
+        try {
+            const body = await request.json()
+            const member = await this.service.updateMemberRole(
+                workspaceId,
+                memberId,
+                userId,
+                body
+            )
+
+            return NextResponse.json(
+                successResponse({
+                    message: 'Member updated successfully',
+                    member: convertBigIntToString(member),
+                })
+            )
+        } catch (error) {
+            const authError = handleError(error)
+            return NextResponse.json(
+                errorResponse(authError.message, authError.statusCode),
+                { status: authError.statusCode }
+            )
+        }
+    }
+
+    async removeMemberById(
+        request: NextRequest,
+        workspaceId: bigint,
+        memberId: bigint,
+        userId: bigint
+    ) {
+        try {
+            await this.service.removeMemberById(workspaceId, memberId, userId)
+
+            return NextResponse.json(
+                successResponse({
+                    message: 'Member removed successfully',
+                })
+            )
+        } catch (error) {
+            const authError = handleError(error)
+            return NextResponse.json(
+                errorResponse(authError.message, authError.statusCode),
+                { status: authError.statusCode }
+            )
+        }
+    }
+}

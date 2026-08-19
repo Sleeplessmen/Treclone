@@ -1,0 +1,30 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: treclone-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: treclone
+      POSTGRES_PASSWORD: treclone123
+      POSTGRES_DB: treclone
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U treclone"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Local email catcher - emails are viewable at http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: treclone-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025" # SMTP server
+      - "8025:8025" # Web UI
+
+volumes:
+  pgdata:
