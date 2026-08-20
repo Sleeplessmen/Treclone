@@ -52,6 +52,6 @@ src/stories/
 
 # ---- Project housekeeping ----
 .roo/
-.design-system/
-prisma/seed.ts
+design-system/
+prisma\seed.ts
 
