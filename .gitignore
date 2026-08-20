@@ -44,14 +44,46 @@ yarn-error.log*
 !.vscode/settings.json
 *.pem
 
-# ---- Storybook ----
-.storybook/
-storybook-static
-src/stories/
-*storybook.log
-
 # ---- Project housekeeping ----
 .roo/
-design-system/
-prisma\seed.ts
+
+# ---- AI Coding Agents ----
+# Mistral Vibe
+.vibe/
+.vibe.log*
+*.vibe
+vibe-scratchpad-*/
+
+# Cursor AI
+.cursor/
+
+# Codeium
+.codeium/
+
+# Gitpod
+.gitpod/
+
+# Replit
+.replit
+
+# Continue
+.continue/
+
+# Aider
+.aider/
+
+# GitHub Copilot
+.copilot/
+
+# Generic AI
+.ai/
+.agent/
+
+# ---- Project Documentation (AI Agent files) ----
+AGENTS.md
+ARCHITECTURE.md
+DEVELOPMENT.md
+REVIEW.md
+TESTING.md
+design-system/MASTER.md
 
