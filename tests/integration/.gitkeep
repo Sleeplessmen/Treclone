@@ -1,0 +1,3 @@
+# Integration tests directory
+# Place your integration test files here
+# Example: auth.api.test.ts, board.api.test.ts

@@ -36,6 +36,16 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# ---- Test & Build artifacts ----
+.vitest/
+.nyc_output/
+coverage/
+vitest.results.json
+*.lcov
+
+# ---- Test setup files ----
+tests/setup/
+
 # ---- OS & Editor ----
 .DS_Store
 .idea/
@@ -79,11 +89,35 @@ vibe-scratchpad-*/
 .ai/
 .agent/
 
-# ---- Project Documentation (AI Agent files) ----
-AGENTS.md
-ARCHITECTURE.md
-DEVELOPMENT.md
-REVIEW.md
-TESTING.md
-design-system/MASTER.md
+# ---- Documentation (kept in repo) ----
+!docs/**
+!README.md
+
+# ---- AI Coding Agents (now in docs/) ----
+# These files have been moved to docs/ directory
+# AGENTS.md -> docs/AGENTS.md
+# ARCHITECTURE.md -> docs/ARCHITECTURE.md
+# DEVELOPMENT.md -> docs/DEVELOPMENT.md
+# REVIEW.md -> docs/REVIEW.md
+# TESTING.md -> docs/TESTING.md
+# design-system/MASTER.md -> docs/design-system/MASTER.md
+
+# ---- New project structure ----
+# GitHub workflows (kept in repo)
+!.github/
+
+# Docker configurations (kept in repo)
+!docker/
+
+# Husky hooks (kept in repo)
+!.husky/
+
+# Test files (kept in repo)
+!tests/
+
+# Lint & config files (kept in repo)
+!.eslintrc.json
+!.prettierrc
+!.lintstagedrc
+!.dockerignore
 
