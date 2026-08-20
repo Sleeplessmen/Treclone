@@ -51,10 +51,6 @@ src/stories/
 *storybook.log
 
 # ---- Project housekeeping ----
-design/
-bruno/
-COMMAND.md
-MEGA_PROMPT.md
-UI_INSTRUCTION.md
+.roo/
 
 
