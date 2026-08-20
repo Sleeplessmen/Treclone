@@ -10,16 +10,6 @@
     "build": "rimraf .next && prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "vitest --run",
-    "test:unit": "vitest --run",
-    "test:unit:watch": "vitest --watch",
-    "test:integration": "vitest --mode integration --run",
-    "test:integration:watch": "vitest --mode integration --watch",
-    "test:e2e": "vitest --mode e2e --run",
-    "test:e2e:watch": "vitest --mode e2e --watch",
-    "test:vitest:ui": "vitest --ui",
-    "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
-    "test:coverage": "vitest --run --coverage",
     "postinstall": "prisma generate"
   },
   "dependencies": {
