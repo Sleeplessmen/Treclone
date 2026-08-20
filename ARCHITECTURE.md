@@ -3,6 +3,8 @@
 This document describes how Treclone is organized and why. It targets both new
 contributors and anyone touching the backend or frontend layers.
 
+**Related:** [AGENTS.md](./AGENTS.md), [DEVELOPMENT.md](./DEVELOPMENT.md), [TESTING.md](./TESTING.md)
+
 ## 1. High-level layout
 
 ```
@@ -106,6 +108,8 @@ IDs are `BigInt` autoincrement (serialized to strings over the API via
 
 ## 7. Testing strategy
 
+Xem chi tiết trong [TESTING.md](./TESTING.md)
+
 | Suite | Command | Environment | Needs DB |
 |---|---|---|---|
 | Unit | `npm run test:unit` | jsdom | no |
@@ -115,3 +119,5 @@ IDs are `BigInt` autoincrement (serialized to strings over the API via
 All suites share `vitest.config.ts` and are selected via `--mode`.
 Integration/e2e fall back to the Docker Compose database URL
 (`tests/integration-setup.ts`).
+
+**Coverage Thresholds:** ≥ 80% for lines, functions, branches, statements (xem [TESTING.md](./TESTING.md#-test-coverage-thresholds))

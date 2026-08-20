@@ -151,6 +151,9 @@ platform's environment settings. The `build` script runs `prisma generate` befor
 ## 📚 Documentation
 
 - [ARCHITECTURE.md](./ARCHITECTURE.md) — system design, layers, middleware, error handling
-- [CONTRIBUTING.md](./CONTRIBUTING.md) — development workflow, code style, PR checklist
 - [DESIGN.md](./DESIGN.md) — design system & UI conventions
+- [DEVELOPMENT.md](./DEVELOPMENT.md) — local development setup & workflow
+- [TESTING.md](./TESTING.md) — testing strategy & guidelines
+- [AGENTS.md](./AGENTS.md) — agent workflow protocol
+- [REVIEW.md](./REVIEW.md) — current state & implementation plan
 

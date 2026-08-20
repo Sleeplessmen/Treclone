@@ -2,7 +2,8 @@
 
 **Version:** 1.0  
 **Last Updated:** 2026-08-20  
-**Status:** ACTIVE - Mandatory for all Agent sessions
+**Status:** ACTIVE - Mandatory for all Agent sessions  
+**Related:** [TESTING.md](./TESTING.md), [DEVELOPMENT.md](./DEVELOPMENT.md), [REVIEW.md](./REVIEW.md)
 
 ---
 
@@ -88,6 +89,9 @@ Route Handler → withMiddleware → Controller → Service → Repository → P
 ## 🛠️ FEEDBACK LOOPS (Bắt buộc cho TDD & AFK)
 
 ### CLI Commands (Phải chạy được tức thì)
+
+Xem chi tiết trong [DEVELOPMENT.md](./DEVELOPMENT.md#-common-commands)
+
 ```bash
 # Linting
 npm run lint                    # ESLint (must pass)
@@ -96,19 +100,22 @@ npx prettier --write .         # Formatting
 # Type Check
 npm run build                   # Next.js build (includes type-check)
 
-# Testing
+# Testing (xem [TESTING.md](./TESTING.md) cho chi tiết)
 npm run test:unit              # Unit tests (jsdom, no DB)
 npm run test:integration       # Integration tests (needs Docker DB)
 npm run test:e2e              # E2E tests
 npm run test:all              # Run all tests (REQUIRED before push)
 
-# Development
+# Development (xem [DEVELOPMENT.md](./DEVELOPMENT.md) cho chi tiết)
 npm run dev                    # Next.js dev server
 npm run db:generate            # Generate Prisma client
 npm run db:migrate            # Run migrations
 ```
 
 ### TDD Vòng lặp (Red-Green-Refactor)
+
+Xem chi tiết trong [TESTING.md](./TESTING.md#-tdd-workflow)
+
 1. **RED**: Viết test thất bại
 2. **GREEN**: Viết code để test pass
 3. **REFACTOR**: Tối ưu code, giữ test xanh
@@ -333,9 +340,9 @@ Step 4 (VERIFY):
 ## 📋 CHECKLIST TRƯỚC KHI PUSH
 
 - [ ] `npm run lint` passes
-- [ ] `npm run test:all` passes
+- [ ] `npm run test:all` passes (xem [TESTING.md](./TESTING.md))
 - [ ] TypeScript compiles without errors
-- [ ] New/changed behavior has tests
+- [ ] New/changed behavior has tests (bắt buộc theo [TESTING.md](./TESTING.md))
 - [ ] Database migrations committed (if schema changed)
 - [ ] Environment variables in `.env.example`
 - [ ] README/ARCHITECTURE updated (if relevant)
@@ -351,10 +358,13 @@ Step 4 (VERIFY):
 ## 🚀 NEXT STEPS (Ưu tiên cao)
 
 ### Immediate (Fix Critical Issues)
-1. Generate JWT_SECRET: `openssl rand -hex 32`
-2. Configure database credentials in `.env.local`
-3. Run `docker compose up -d` for PostgreSQL
-4. Run `npx prisma migrate dev`
+
+Xem chi tiết trong [DEVELOPMENT.md](./DEVELOPMENT.md#-environment-configuration)
+
+1. Generate JWT_SECRET: `openssl rand -base64 32` (xem [DEVELOPMENT.md](./DEVELOPMENT.md#generate-jwt-secret))
+2. Configure database credentials in `.env.local` (xem [DEVELOPMENT.md](./DEVELOPMENT.md#-environment-configuration))
+3. Run `docker compose up -d` for PostgreSQL (xem [DEVELOPMENT.md](./DEVELOPMENT.md#-docker-setup))
+4. Run `npx prisma migrate dev` (xem [DEVELOPMENT.md](./DEVELOPMENT.md#-database-management))
 
 ### High Priority (Week 1-2)
 1. **Permissions System**
@@ -397,10 +407,16 @@ Step 4 (VERIFY):
 
 ## 📚 TÀI LIỆU THAM KHẢO
 
+### Core Documentation
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - Kiến trúc chi tiết
 - [DESIGN.md](./DESIGN.md) - Hệ thống thiết kế
 - [CONTRIBUTING.md](./CONTRIBUTING.md) - Quy tắc đóng góp
 - [REVIEW.md](./REVIEW.md) - Trạng thái hiện tại & kế hoạch
+
+### Development & Testing
+- [DEVELOPMENT.md](./DEVELOPMENT.md) - Hướng dẫn setup & development workflow
+- [TESTING.md](./TESTING.md) - Chiến lược testing & best practices
+- [design-system/MASTER.md](./design-system/MASTER.md) - Design system specifications
 
 ---
 
